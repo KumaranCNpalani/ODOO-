@@ -17,6 +17,7 @@ import {
   User2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import logoImg from '@/app/logo.png';
 
 interface SidebarProps {
   user: {
@@ -100,7 +101,7 @@ export default function Sidebar({ user }: SidebarProps) {
         <div className="flex items-center gap-3 px-2 py-3">
           <div className="w-12 h-8 relative">
             <img
-              src="/logo.png"
+              src={logoImg.src}
               alt="AssetFlow Logo"
               className="w-full h-full object-contain"
             />

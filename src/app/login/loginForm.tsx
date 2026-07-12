@@ -3,6 +3,7 @@
 import { useState, useActionState } from 'react';
 import { login, signup } from '@/app/actions/authActions';
 import Link from 'next/link';
+import logoImg from '@/app/logo.png';
 
 export default function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -22,7 +23,7 @@ export default function LoginForm() {
       <div className="flex flex-col items-center gap-2 mb-6 relative z-10">
         <div className="w-24 h-16 relative">
           <img
-            src="/logo.png"
+            src={logoImg.src}
             alt="AssetFlow Logo"
             className="w-full h-full object-contain"
           />
@@ -75,11 +76,6 @@ export default function LoginForm() {
         <div className="flex flex-col gap-1.5">
           <div className="flex justify-between items-center">
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Password</label>
-            {isLogin && (
-              <Link href="/login/forgot" className="text-[10px] text-primary hover:underline font-semibold">
-                Forgot password?
-              </Link>
-            )}
           </div>
           <input
             type="password"
