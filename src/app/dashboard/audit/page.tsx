@@ -24,17 +24,27 @@ export default async function AuditPage() {
       [activeCycle.id]
     );
 
-    activeCycle.items = rawItems.map((item: any) => ({
-      id: item.id,
-      auditCycleId: item.audit_cycle_id,
-      assetId: item.asset_id,
-      status: item.status,
-      verifiedById: item.verified_by_id,
-      verificationNotes: item.verification_notes,
-      verifiedAt: item.verified_at,
-      asset: { id: item.asset_uuid, name: item.asset_name, assetTag: item.asset_tag, location: item.asset_location },
-      verifiedBy: item.verifier_name ? { name: item.verifier_name } : null,
-    }));
+    activeCycle = {
+      id: activeCycle.id,
+      name: activeCycle.name,
+      departmentScopeId: activeCycle.department_scope_id,
+      locationScope: activeCycle.location_scope,
+      startDate: activeCycle.start_date,
+      endDate: activeCycle.end_date,
+      status: activeCycle.status,
+      createdAt: activeCycle.created_at,
+      items: rawItems.map((item: any) => ({
+        id: item.id,
+        auditCycleId: item.audit_cycle_id,
+        assetId: item.asset_id,
+        status: item.status,
+        verifiedById: item.verified_by_id,
+        verificationNotes: item.verification_notes,
+        verifiedAt: item.verified_at,
+        asset: { id: item.asset_uuid, name: item.asset_name, assetTag: item.asset_tag, location: item.asset_location },
+        verifiedBy: item.verifier_name ? { name: item.verifier_name } : null,
+      }))
+    };
   }
 
   // Fetch departments list
@@ -46,6 +56,32 @@ export default async function AuditPage() {
   const users = await query<any>(
     'SELECT id, name, email FROM odoo_assetflow_users WHERE status = "ACTIVE" ORDER BY name ASC'
   );
+
+  // Fetch past closed audit cycles
+  const rawPastCycles = await query<any>(
+    `SELECT c.*,
+       (SELECT COUNT(*) FROM odoo_assetflow_audit_items WHERE audit_cycle_id = c.id) as total_items,
+       (SELECT COUNT(*) FROM odoo_assetflow_audit_items WHERE audit_cycle_id = c.id AND status = 'VERIFIED') as verified_items,
+       (SELECT COUNT(*) FROM odoo_assetflow_audit_items WHERE audit_cycle_id = c.id AND status = 'MISSING') as missing_items,
+       (SELECT COUNT(*) FROM odoo_assetflow_audit_items WHERE audit_cycle_id = c.id AND status = 'DAMAGED') as damaged_items
+     FROM odoo_assetflow_audit_cycles c
+     WHERE c.status = 'CLOSED'
+     ORDER BY c.end_date DESC`
+  );
+
+  const pastCycles = rawPastCycles.map((c: any) => ({
+    id: c.id,
+    name: c.name,
+    departmentScopeId: c.department_scope_id,
+    locationScope: c.location_scope,
+    startDate: c.start_date,
+    endDate: c.end_date,
+    status: c.status,
+    totalItems: c.total_items,
+    verifiedItems: c.verified_items,
+    missingItems: c.missing_items,
+    damagedItems: c.damaged_items,
+  }));
 
   // Fetch logged in user full role
   const currentUsers = await query<any>(
@@ -59,7 +95,7 @@ export default async function AuditPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-2xl font-bold text-white tracking-tight">Audit Cycles</h2>
+        <h2 className="text-2xl font-bold text-foreground tracking-tight">Audit Cycles</h2>
         <p className="text-sm text-muted-foreground">Perform asset stock verification and auto-resolve stock discrepancies</p>
       </div>
 
@@ -68,6 +104,7 @@ export default async function AuditPage() {
         departments={departments} 
         users={users} 
         currentUser={currentUser} 
+        pastCycles={pastCycles}
       />
     </div>
   );

@@ -84,7 +84,7 @@ export default async function DashboardPage() {
       {/* Welcome Heading */}
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Overview Console</h2>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">Overview Console</h2>
           <p className="text-sm text-muted-foreground">Real-time status of Odoo corporate assets</p>
         </div>
       </div>
@@ -118,7 +118,7 @@ export default async function DashboardPage() {
         <div className="p-5 rounded-xl border border-border bg-card shadow-sm flex items-center justify-between group hover:border-primary/40 transition-all duration-200">
           <div>
             <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Available Assets</span>
-            <p className="text-3xl font-extrabold text-white mt-1">{availableCount}</p>
+            <p className="text-3xl font-extrabold text-foreground mt-1">{availableCount}</p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-all">
             <Package className="w-6 h-6" />
@@ -129,7 +129,7 @@ export default async function DashboardPage() {
         <div className="p-5 rounded-xl border border-border bg-card shadow-sm flex items-center justify-between group hover:border-blue-500/40 transition-all duration-200">
           <div>
             <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Allocated Assets</span>
-            <p className="text-3xl font-extrabold text-white mt-1">{allocatedCount}</p>
+            <p className="text-3xl font-extrabold text-foreground mt-1">{allocatedCount}</p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-105 transition-all">
             <ArrowLeftRight className="w-6 h-6" />
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
         <div className="p-5 rounded-xl border border-border bg-card shadow-sm flex items-center justify-between group hover:border-amber-500/40 transition-all duration-200">
           <div>
             <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Maintenance</span>
-            <p className="text-3xl font-extrabold text-white mt-1">{maintenanceCount}</p>
+            <p className="text-3xl font-extrabold text-foreground mt-1">{maintenanceCount}</p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-105 transition-all">
             <Wrench className="w-6 h-6" />
@@ -151,7 +151,7 @@ export default async function DashboardPage() {
         <div className="p-5 rounded-xl border border-border bg-card shadow-sm flex items-center justify-between group hover:border-emerald-500/40 transition-all duration-200">
           <div>
             <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Active Bookings</span>
-            <p className="text-3xl font-extrabold text-white mt-1">{bookingCount}</p>
+            <p className="text-3xl font-extrabold text-foreground mt-1">{bookingCount}</p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-105 transition-all">
             <CalendarDays className="w-6 h-6" />
@@ -162,7 +162,7 @@ export default async function DashboardPage() {
         <div className="p-5 rounded-xl border border-border bg-card shadow-sm flex items-center justify-between group hover:border-purple-500/40 transition-all duration-200">
           <div>
             <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Transfers</span>
-            <p className="text-3xl font-extrabold text-white mt-1">{transferCount}</p>
+            <p className="text-3xl font-extrabold text-foreground mt-1">{transferCount}</p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:scale-105 transition-all">
             <ArrowLeftRight className="w-6 h-6" />
@@ -174,7 +174,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick Actions Console */}
         <div className="lg:col-span-1 p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
-          <h3 className="font-bold text-white text-base">Quick Actions</h3>
+          <h3 className="font-bold text-foreground text-base">Quick Actions</h3>
           
           <div className="flex flex-col gap-3">
             {/* Action 1 */}
@@ -187,7 +187,7 @@ export default async function DashboardPage() {
                   <Package className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">Register Asset</p>
+                  <p className="text-sm font-semibold text-foreground">Register Asset</p>
                   <p className="text-[10px] text-muted-foreground">Add equipment or property</p>
                 </div>
               </div>
@@ -204,7 +204,7 @@ export default async function DashboardPage() {
                   <CalendarDays className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">Book Resource</p>
+                  <p className="text-sm font-semibold text-foreground">Book Resource</p>
                   <p className="text-[10px] text-muted-foreground">Reserve meeting rooms or cars</p>
                 </div>
               </div>
@@ -221,7 +221,7 @@ export default async function DashboardPage() {
                   <Wrench className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">Raise Request</p>
+                  <p className="text-sm font-semibold text-foreground">Raise Request</p>
                   <p className="text-[10px] text-muted-foreground">Report issues for repairs</p>
                 </div>
               </div>
@@ -232,7 +232,7 @@ export default async function DashboardPage() {
 
         {/* Recent Activity Log Feed */}
         <div className="lg:col-span-2 p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
-          <h3 className="font-bold text-white text-base">Recent Activities</h3>
+          <h3 className="font-bold text-foreground text-base">Recent Activities</h3>
 
           <div className="flex flex-col gap-3">
             {logs.length === 0 ? (
@@ -248,7 +248,7 @@ export default async function DashboardPage() {
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-primary/80"></div>
-                    <p className="text-sm text-white font-medium">{getActionText(log)}</p>
+                    <p className="text-sm text-foreground font-medium">{getActionText(log)}</p>
                   </div>
                   <span className="text-[10px] text-muted-foreground font-semibold">
                     {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

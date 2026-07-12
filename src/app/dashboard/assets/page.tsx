@@ -22,13 +22,23 @@ export default async function AssetsPage() {
 
   const assets = rawAssets.map((asset: any) => ({
     ...asset,
+    assetTag: asset.asset_tag,
+    serialNumber: asset.serial_number,
+    acquisitionDate: asset.acquisition_date,
+    acquisitionCost: asset.acquisition_cost,
+    currentCondition: asset.current_condition,
+    sharedBookable: asset.shared_bookable,
+    customFieldValues: typeof asset.custom_field_values === 'string' 
+      ? JSON.parse(asset.custom_field_values) 
+      : asset.custom_field_values,
+    photoUrl: asset.photo_url,
     category: { id: asset.category_id, name: asset.category_name },
   }));
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-2xl font-bold text-white tracking-tight">Assets Registry</h2>
+        <h2 className="text-2xl font-bold text-foreground tracking-tight">Assets Registry</h2>
         <p className="text-sm text-muted-foreground">Search and manage organizational hardware, spaces, and equipment</p>
       </div>
 

@@ -56,7 +56,7 @@ export default async function MaintenancePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-2xl font-bold text-white tracking-tight">Maintenance Pipeline</h2>
+        <h2 className="text-2xl font-bold text-foreground tracking-tight">Maintenance Pipeline</h2>
         <p className="text-sm text-muted-foreground">Manage and track equipment repairs, technician assignments, and resolutions</p>
       </div>
 

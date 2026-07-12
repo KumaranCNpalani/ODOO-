@@ -54,7 +54,7 @@ export default async function SetupPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-2xl font-bold text-white tracking-tight font-sans">Organization Setup</h2>
+        <h2 className="text-2xl font-bold text-foreground tracking-tight font-sans">Organization Setup</h2>
         <p className="text-sm text-muted-foreground">Admin panel for department management, categories, and promotions</p>
       </div>
 

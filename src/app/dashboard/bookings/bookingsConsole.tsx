@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { bookResource, cancelBooking } from '@/app/actions/bookingActions';
-import { CalendarDays, Clock, User, X, Check, AlertTriangle, CalendarRange } from 'lucide-react';
+import { Clock, X, AlertTriangle, CalendarRange } from 'lucide-react';
 
 interface BookingsConsoleProps {
   resources: any[];
@@ -15,6 +15,12 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
   const [selectedAssetId, setSelectedAssetId] = useState(resources[0]?.id || '');
   const [bookingDate, setBookingDate] = useState(new Date().toISOString().split('T')[0]);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Mounted state to handle locale date hydration
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // New Booking States
   const [startTime, setStartTime] = useState('09:00');
@@ -89,11 +95,16 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
     return slots;
   };
 
+  const renderBookingDate = () => {
+    if (!mounted) return '';
+    return new Date(bookingDate).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Left Column: Booking Form and overlap validator widget */}
       <div className="lg:col-span-1 p-6 rounded-xl border border-border bg-card flex flex-col gap-5">
-        <h3 className="font-bold text-white text-base">Book a Time Slot</h3>
+        <h3 className="font-bold text-foreground text-base">Book a Time Slot</h3>
         
         <form onSubmit={handleBookSlot} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -102,7 +113,7 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
               required
               value={selectedAssetId}
               onChange={(e) => { setSelectedAssetId(e.target.value); setMessage(null); }}
-              className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+              className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
             >
               <option value="">Select Resource...</option>
               {resources.map((res) => (
@@ -118,7 +129,7 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
               required
               value={bookingDate}
               onChange={(e) => setBookingDate(e.target.value)}
-              className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+              className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
             />
           </div>
 
@@ -128,7 +139,7 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
               <select
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
               >
                 {getTimelineSlots().slice(0, -1).map((s) => (
                   <option key={s} value={s.substring(0, 5)}>{s}</option>
@@ -141,7 +152,7 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
               <select
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
               >
                 {getTimelineSlots().slice(1).map((s) => (
                   <option key={s} value={s.substring(0, 5)}>{s}</option>
@@ -161,7 +172,7 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
           <button
             type="submit"
             disabled={isPending || hasConflict || !selectedAssetId}
-            className="w-full py-3 mt-2 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-sm shadow-lg shadow-primary/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 mt-2 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-sm shadow-lg shadow-primary/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isPending ? 'Reserving...' : 'Confirm Reservation'}
           </button>
@@ -182,10 +193,10 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
         {/* Scheduler Grid Sheet */}
         <div className="p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
           <div className="flex justify-between items-center border-b border-border pb-3">
-            <h3 className="font-bold text-white text-base">Timeline Schedule</h3>
+            <h3 className="font-bold text-foreground text-base">Timeline Schedule</h3>
             <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1.5">
               <CalendarRange className="w-4 h-4 text-primary" />
-              {new Date(bookingDate).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+              {renderBookingDate()}
             </span>
           </div>
 
@@ -198,8 +209,8 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
             ) : (
               selectedResourceBookings.map((b) => {
                 const isOwn = b.bookedById === currentUserId;
-                const startHour = new Date(b.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const endHour = new Date(b.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const startHour = mounted ? new Date(b.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                const endHour = mounted ? new Date(b.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                 
                 return (
                   <div 
@@ -209,7 +220,7 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
                     <div className="flex items-center gap-3">
                       <div className="w-1.5 h-10 rounded bg-primary"></div>
                       <div>
-                        <p className="text-sm font-semibold text-white">Reserved Slot</p>
+                        <p className="text-sm font-semibold text-foreground">Reserved Slot</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                           <Clock className="w-3.5 h-3.5" />
                           {startHour} - {endHour}
@@ -219,14 +230,14 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
                     
                     <div className="flex items-center gap-4">
                       <div className="text-right text-xs">
-                        <p className="text-white font-bold">{b.bookedBy.name}</p>
+                        <p className="text-foreground font-bold">{b.bookedBy.name}</p>
                         <p className="text-[10px] text-muted-foreground uppercase font-semibold">{b.bookedBy.role}</p>
                       </div>
 
                       {isOwn && (
                         <button
                           onClick={() => handleCancelBooking(b.id)}
-                          className="p-1.5 rounded hover:bg-destructive/15 text-destructive transition-all"
+                          className="p-1.5 rounded hover:bg-destructive/15 text-destructive transition-all cursor-pointer"
                         >
                           <X className="w-4 h-4" />
                         </button>

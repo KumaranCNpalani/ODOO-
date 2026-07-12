@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { createMaintenanceRequest, updateMaintenanceStatus } from '@/app/actions/maintenanceActions';
-import { Plus, ArrowLeft, ArrowRight, Wrench, Clock, CheckCircle2, User, AlertCircle, X } from 'lucide-react';
+import { Plus, ArrowLeft, ArrowRight, User, X } from 'lucide-react';
 import { MaintenancePriority, MaintenanceStatus } from '@prisma/client';
 
 interface MaintenanceConsoleProps {
@@ -108,7 +108,7 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
         </div>
         <button
           onClick={() => setShowDrawer(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-xs transition-all shadow-md"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-xs transition-all shadow-md cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           Raise Request
@@ -134,8 +134,8 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
             >
               {/* Header */}
               <div className="flex justify-between items-center border-b border-border pb-2">
-                <span className="font-bold text-white text-xs uppercase tracking-wider">{col.label}</span>
-                <span className="px-2 py-0.5 rounded bg-secondary text-[10px] font-bold text-white">
+                <span className="font-bold text-foreground text-xs uppercase tracking-wider">{col.label}</span>
+                <span className="px-2 py-0.5 rounded bg-secondary text-[10px] font-bold text-foreground">
                   {colRequests.length}
                 </span>
               </div>
@@ -155,7 +155,7 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
                       }`}
                     >
                       <div className="flex justify-between items-start">
-                        <span className="text-[10px] font-bold text-white tracking-wider font-mono bg-secondary px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-bold text-foreground tracking-wider font-mono bg-secondary px-1.5 py-0.5 rounded">
                           {req.asset.assetTag}
                         </span>
                         <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase ${getPriorityColor(req.priority)}`}>
@@ -164,7 +164,7 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
                       </div>
 
                       <div>
-                        <p className="text-xs font-bold text-white leading-tight">{req.asset.name}</p>
+                        <p className="text-xs font-bold text-foreground leading-tight">{req.asset.name}</p>
                         <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed line-clamp-3">
                           {req.description}
                         </p>
@@ -185,7 +185,7 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
                           <select
                             defaultValue={req.technicianId || ''}
                             onChange={(e) => handleAssignTechnician(req.id, e.target.value)}
-                            className="px-2 py-1 rounded bg-secondary border border-border text-white text-[10px] focus:outline-none"
+                            className="px-2 py-1 rounded bg-secondary border border-border text-foreground text-[10px] focus:outline-none"
                           >
                             <option value="">Choose Tech...</option>
                             {technicians.map((t) => (
@@ -200,16 +200,16 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
                         <div className="flex justify-between items-center border-t border-border/40 pt-2">
                           <button
                             onClick={() => handleMoveCard(req.id, req.status, 'left')}
-                            disabled={req.status === 'PENDING' || isPending}
-                            className="p-1 rounded bg-secondary hover:bg-muted text-muted-foreground hover:text-white disabled:opacity-30"
+                            className="p-1 rounded bg-secondary hover:bg-muted text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            disabled={isPending || req.status === 'PENDING'}
                           >
                             <ArrowLeft className="w-3.5 h-3.5" />
                           </button>
                           
                           <button
                             onClick={() => handleMoveCard(req.id, req.status, 'right')}
-                            disabled={req.status === 'RESOLVED' || isPending || (req.status === 'APPROVED' && !req.technicianId)}
-                            className="p-1 rounded bg-secondary hover:bg-muted text-muted-foreground hover:text-white disabled:opacity-30"
+                            className="p-1 rounded bg-secondary hover:bg-muted text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            disabled={isPending || req.status === 'RESOLVED'}
                           >
                             <ArrowRight className="w-3.5 h-3.5" />
                           </button>
@@ -229,8 +229,8 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-md bg-card border-l border-border h-full p-6 flex flex-col gap-4 overflow-y-auto">
             <div className="flex justify-between items-center border-b border-border pb-4">
-              <h3 className="font-bold text-lg text-white">Raise Maintenance Ticket</h3>
-              <button onClick={() => setShowDrawer(false)} className="text-muted-foreground hover:text-white">
+              <h3 className="font-bold text-lg text-foreground">Raise Maintenance Request</h3>
+              <button onClick={() => setShowDrawer(false)} className="text-muted-foreground hover:text-foreground cursor-pointer">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -242,12 +242,12 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
                   required
                   value={selectedAssetId}
                   onChange={(e) => setSelectedAssetId(e.target.value)}
-                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
                 >
-                  <option value="">Select Asset Tag...</option>
-                  {assets.map((asset) => (
-                    <option key={asset.id} value={asset.id}>
-                      [{asset.assetTag}] {asset.name}
+                  <option value="">Select Asset...</option>
+                  {assets.map((asst) => (
+                    <option key={asst.id} value={asst.id}>
+                      [{asst.assetTag}] {asst.name}
                     </option>
                   ))}
                 </select>
@@ -259,7 +259,7 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
                   required
                   value={priority}
                   onChange={(e) => setPriority(e.target.value as any)}
-                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
                 >
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
@@ -269,23 +269,34 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-muted-foreground uppercase">Description of Issue *</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase">Describe Issue *</label>
                 <textarea
                   required
-                  placeholder="Provide details about the fault (e.g. flickering screen, fan noise...)"
+                  placeholder="Explain what is wrong with this asset..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
-                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none resize-none"
+                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase">Photo attachment URL</label>
+                <input
+                  type="text"
+                  placeholder="Paste URL..."
+                  value={photoUrl}
+                  onChange={(e) => setPhotoUrl(e.target.value)}
+                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full py-3 mt-4 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all"
+                className="w-full py-3 mt-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-all cursor-pointer"
               >
-                {isPending ? 'Submitting...' : 'File Ticket'}
+                {isPending ? 'Submitting...' : 'Submit Request'}
               </button>
             </form>
           </div>

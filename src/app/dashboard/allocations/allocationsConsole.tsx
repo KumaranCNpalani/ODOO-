@@ -1,8 +1,14 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { allocateAsset, submitTransferRequest, returnAsset } from '@/app/actions/assetActions';
-import { Search, AlertTriangle, ArrowRight, UserCheck, Calendar, Clock, Check, X } from 'lucide-react';
+import { 
+  allocateAsset, 
+  submitTransferRequest, 
+  returnAsset, 
+  approveTransferRequest, 
+  rejectTransferRequest 
+} from '@/app/actions/assetActions';
+import { Search, AlertTriangle, Calendar, Check, X } from 'lucide-react';
 import { AssetCondition } from '@prisma/client';
 
 interface AllocationsConsoleProps {
@@ -132,6 +138,30 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
     });
   };
 
+  const handleApproveTransfer = (requestId: string) => {
+    setMessage(null);
+    startTransition(async () => {
+      const result = await approveTransferRequest(requestId);
+      if (result.success) {
+        setMessage({ type: 'success', text: 'Transfer request approved! Asset has been re-allocated.' });
+      } else {
+        setMessage({ type: 'error', text: result.message || 'Failed to approve transfer' });
+      }
+    });
+  };
+
+  const handleRejectTransfer = (requestId: string) => {
+    setMessage(null);
+    startTransition(async () => {
+      const result = await rejectTransferRequest(requestId);
+      if (result.success) {
+        setMessage({ type: 'success', text: 'Transfer request rejected.' });
+      } else {
+        setMessage({ type: 'error', text: result.message || 'Failed to reject transfer' });
+      }
+    });
+  };
+
   // Helper check: can approve transfer
   const canApproveTransfer = (request: any) => {
     if (currentUser.role === 'ADMIN' || currentUser.role === 'ASSET_MANAGER') return true;
@@ -149,7 +179,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
         
         {/* Search Asset Console */}
         <div className="p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
-          <h3 className="font-bold text-white text-base">Select Asset for Allocation</h3>
+          <h3 className="font-bold text-foreground text-base">Select Asset for Allocation</h3>
           <form onSubmit={handleSearchAsset} className="flex gap-2">
             <div className="flex-1 flex items-center gap-2 bg-secondary border border-border px-3 rounded-lg">
               <Search className="w-4 h-4 text-muted-foreground" />
@@ -159,12 +189,12 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                 placeholder="Enter Asset Tag (e.g. AF-0012)"
                 value={searchTag}
                 onChange={(e) => setSearchTag(e.target.value)}
-                className="flex-1 py-2.5 bg-transparent text-white text-sm focus:outline-none"
+                className="flex-1 py-2.5 bg-transparent text-foreground text-sm focus:outline-none"
               />
             </div>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all"
+              className="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all cursor-pointer"
             >
               Verify Tag
             </button>
@@ -186,7 +216,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
             {/* Header: Selected Asset Header info */}
             <div className="flex justify-between items-start border-b border-border pb-4">
               <div>
-                <h4 className="font-bold text-lg text-white">{selectedAsset.name}</h4>
+                <h4 className="font-bold text-lg text-foreground">{selectedAsset.name}</h4>
                 <p className="text-xs text-muted-foreground tracking-wider font-mono uppercase">Tag: {selectedAsset.assetTag} | Location: {selectedAsset.location}</p>
               </div>
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
@@ -211,7 +241,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                 </div>
 
                 <form onSubmit={handleTransfer} className="flex flex-col gap-4 bg-secondary/20 p-4 rounded-lg border border-border/50">
-                  <h5 className="font-bold text-white text-xs uppercase tracking-wider">Raise Transfer Request</h5>
+                  <h5 className="font-bold text-foreground text-xs uppercase tracking-wider">Raise Transfer Request</h5>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
@@ -220,7 +250,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                         type="text"
                         disabled
                         value={conflictHolder}
-                        className="px-4 py-2.5 rounded-lg bg-zinc-800 border border-border text-muted-foreground text-sm cursor-not-allowed"
+                        className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-muted-foreground text-sm cursor-not-allowed"
                       />
                     </div>
 
@@ -230,7 +260,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                         required
                         value={transferTargetUserId}
                         onChange={(e) => setTransferTargetUserId(e.target.value)}
-                        className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                        className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
                       >
                         <option value="">Select Target Employee...</option>
                         {users.map((user) => (
@@ -248,14 +278,14 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                       value={transferReason}
                       onChange={(e) => setTransferReason(e.target.value)}
                       rows={3}
-                      className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none resize-none"
+                      className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="py-2.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-sm transition-all"
+                    className="py-2.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-sm transition-all cursor-pointer"
                   >
                     {isPending ? 'Submitting...' : 'Submit Transfer Request'}
                   </button>
@@ -266,7 +296,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
             {/* FLOW 2: Standard ALLOCATION flow (Available Asset) */}
             {selectedAsset.status === 'AVAILABLE' && (
               <form onSubmit={handleAllocate} className="flex flex-col gap-4">
-                <h5 className="font-bold text-white text-xs uppercase tracking-wider">Allocate Asset</h5>
+                <h5 className="font-bold text-foreground text-xs uppercase tracking-wider">Allocate Asset</h5>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
@@ -275,7 +305,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                       required
                       value={targetUserId}
                       onChange={(e) => setTargetUserId(e.target.value)}
-                      className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                      className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
                     >
                       <option value="">Select Target Employee...</option>
                       {users.map((user) => (
@@ -290,7 +320,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                       type="date"
                       value={expectedReturnDate}
                       onChange={(e) => setExpectedReturnDate(e.target.value)}
-                      className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                      className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
                     />
                   </div>
                 </div>
@@ -298,7 +328,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all"
+                  className="py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-sm transition-all cursor-pointer"
                 >
                   {isPending ? 'Allocating...' : 'Complete Allocation'}
                 </button>
@@ -308,7 +338,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
             {/* FLOW 3: RETURN asset flow (If Allocated, show return options at bottom) */}
             {selectedAsset.status === 'ALLOCATED' && (
               <form onSubmit={handleReturn} className="flex flex-col gap-4 border-t border-border pt-6">
-                <h5 className="font-bold text-white text-xs uppercase tracking-wider">Process Return</h5>
+                <h5 className="font-bold text-foreground text-xs uppercase tracking-wider">Process Return</h5>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
@@ -317,7 +347,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                       required
                       value={returnCondition}
                       onChange={(e) => setReturnCondition(e.target.value as any)}
-                      className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                      className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
                     >
                       <option value="NEW">New</option>
                       <option value="GOOD">Good</option>
@@ -334,7 +364,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                       placeholder="e.g. Scratches on lid, missing charger"
                       value={returnNotes}
                       onChange={(e) => setReturnNotes(e.target.value)}
-                      className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                      className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
                     />
                   </div>
                 </div>
@@ -342,7 +372,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-border text-white font-semibold text-sm transition-all"
+                  className="py-2.5 rounded-lg bg-secondary hover:bg-muted border border-border text-foreground font-semibold text-sm transition-all cursor-pointer"
                 >
                   {isPending ? 'Processing...' : 'Mark Asset Returned'}
                 </button>
@@ -358,7 +388,7 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
         
         {/* Active Transfer Requests */}
         <div className="p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
-          <h3 className="font-bold text-white text-base">Transfer Approvals</h3>
+          <h3 className="font-bold text-foreground text-base">Transfer Approvals</h3>
           <div className="flex flex-col gap-3">
             {transfers.length === 0 ? (
               <p className="text-xs text-muted-foreground py-6 text-center">No pending transfers found</p>
@@ -367,22 +397,30 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
                 <div key={req.id} className="p-3.5 rounded-lg bg-secondary/40 border border-border/40 flex flex-col gap-2">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-xs font-bold text-white">{req.asset.name}</p>
+                      <p className="text-xs font-bold text-foreground">{req.asset.name}</p>
                       <p className="text-[10px] text-muted-foreground tracking-wider font-mono">{req.asset.assetTag}</p>
                     </div>
                   </div>
                   <div className="text-[11px] text-muted-foreground mt-1">
-                    <p><strong className="text-white">From:</strong> {req.requestingUser.name}</p>
-                    <p><strong className="text-white">To:</strong> {req.targetUser?.name || 'No User'}</p>
+                    <p><strong className="text-foreground">From:</strong> {req.requestingUser.name}</p>
+                    <p><strong className="text-foreground">To:</strong> {req.targetUser?.name || 'No User'}</p>
                     {req.remarks && <p className="italic mt-1">"{req.remarks}"</p>}
                   </div>
 
                   {canApproveTransfer(req) && (
                     <div className="flex gap-2 mt-2 pt-2 border-t border-border/30 justify-end">
-                      <button className="p-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-500">
+                      <button 
+                        onClick={() => handleRejectTransfer(req.id)}
+                        disabled={isPending}
+                        className="p-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 cursor-pointer disabled:opacity-50"
+                      >
                         <X className="w-3.5 h-3.5" />
                       </button>
-                      <button className="p-1 rounded bg-primary/10 hover:bg-primary/20 text-primary">
+                      <button 
+                        onClick={() => handleApproveTransfer(req.id)}
+                        disabled={isPending}
+                        className="p-1 rounded bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer disabled:opacity-50"
+                      >
                         <Check className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -396,23 +434,23 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
         {/* Selected Asset Allocation History */}
         {selectedAsset && (
           <div className="p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
-            <h3 className="font-bold text-white text-base">Allocation History</h3>
+            <h3 className="font-bold text-foreground text-base">Allocation History</h3>
             <div className="flex flex-col gap-4 relative pl-4 border-l border-border/60">
               {selectedAsset.allocations.length === 0 ? (
                 <p className="text-xs text-muted-foreground py-2 pl-2">No history recorded</p>
               ) : (
-                selectedAsset.allocations.map((alloc: any, idx: number) => (
+                selectedAsset.allocations.map((alloc: any) => (
                   <div key={alloc.id} className="relative flex flex-col gap-1 text-xs">
                     {/* Bullet marker */}
                     <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-primary border-2 border-card"></div>
-                    <p className="font-semibold text-white">
+                    <p className="font-semibold text-foreground">
                       {alloc.isActive ? 'Active Allocation' : 'Returned'}
                     </p>
                     <p className="text-muted-foreground">
                       Held by: {alloc.allocatedToUser?.name || alloc.allocatedToDept?.name || 'Unassigned'}
                     </p>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
+                      <Calendar className="w-3.5 h-3.5" />
                       {new Date(alloc.allocationDate).toLocaleDateString()} 
                       {alloc.actualReturnDate && ` - ${new Date(alloc.actualReturnDate).toLocaleDateString()}`}
                     </p>

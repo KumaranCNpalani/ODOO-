@@ -254,3 +254,153 @@ export async function returnAsset(data: {
     return { success: false, message: 'Failed to process asset return' };
   }
 }
+
+// 5. Approve Transfer Request
+export async function approveTransferRequest(requestId: string) {
+  const session = await getSession();
+  if (!session) throw new Error('Unauthorized');
+
+  try {
+    const result = await executeTransaction(async (conn) => {
+      // 1. Fetch the request details
+      const [requests]: any[] = await conn.execute(
+        'SELECT * FROM odoo_assetflow_transfer_requests WHERE id = ? FOR UPDATE',
+        [requestId]
+      );
+      const request = requests[0];
+      if (!request) throw new Error('Transfer request not found');
+      if (request.status !== 'REQUESTED') throw new Error('Request already processed');
+
+      // Check permission: Admin, Asset Manager, or Department Head
+      if (session.role !== 'ADMIN' && session.role !== 'ASSET_MANAGER') {
+        if (session.role === 'DEPARTMENT_HEAD') {
+          // Fetch Department Head's department_id from DB
+          const [deptHeads]: any[] = await conn.execute(
+            'SELECT department_id FROM odoo_assetflow_users WHERE id = ?',
+            [session.id]
+          );
+          const deptHead = deptHeads[0];
+
+          // Verify requesting user matches Dept Head's department
+          const [requesters]: any[] = await conn.execute(
+            'SELECT department_id FROM odoo_assetflow_users WHERE id = ?',
+            [request.requesting_user_id]
+          );
+          const requester = requesters[0];
+          
+          if (!deptHead || !requester || requester.department_id !== deptHead.department_id) {
+            throw new Error('Unauthorized: Department Head can only approve internal requests');
+          }
+        } else {
+          throw new Error('Unauthorized: Insufficient permissions');
+        }
+      }
+
+      // 2. Mark older allocations for this asset as inactive
+      await conn.execute(
+        'UPDATE odoo_assetflow_allocations SET is_active = 0, actual_return_date = ? WHERE asset_id = ? AND is_active = 1',
+        [new Date(), request.asset_id]
+      );
+
+      // 3. Create the new allocation
+      const allocationId = crypto.randomUUID();
+      await conn.execute(
+        'INSERT INTO odoo_assetflow_allocations (id, asset_id, allocated_to_user_id, allocated_to_dept_id, allocated_by_id, expected_return_date, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)',
+        [
+          allocationId,
+          request.asset_id,
+          request.target_user_id || null,
+          request.target_dept_id || null,
+          session.id,
+          null
+        ]
+      );
+
+      // 4. Update the asset status (ensure it is ALLOCATED)
+      await conn.execute(
+        'UPDATE odoo_assetflow_assets SET status = "ALLOCATED" WHERE id = ?',
+        [request.asset_id]
+      );
+
+      // 5. Update transfer request status
+      await conn.execute(
+        'UPDATE odoo_assetflow_transfer_requests SET status = "APPROVED", approved_by_id = ? WHERE id = ?',
+        [session.id, requestId]
+      );
+
+      return { assetId: request.asset_id };
+    });
+
+    // Write audit log
+    const logId = crypto.randomUUID();
+    await query(
+      'INSERT INTO odoo_assetflow_audit_logs (id, user_id, action, details) VALUES (?, ?, ?, ?)',
+      [logId, session.id, 'APPROVE_TRANSFER', JSON.stringify({ requestId, assetId: result.assetId })]
+    );
+
+    revalidatePath('/dashboard/assets');
+    revalidatePath('/dashboard/allocations');
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (error: any) {
+    console.error('Approve transfer error:', error);
+    return { success: false, message: error.message || 'Failed to approve transfer request' };
+  }
+}
+
+// 6. Reject Transfer Request
+export async function rejectTransferRequest(requestId: string) {
+  const session = await getSession();
+  if (!session) throw new Error('Unauthorized');
+
+  try {
+    // Check permission: Admin, Asset Manager, or Department Head
+    const [requests]: any[] = await query<any>(
+      'SELECT * FROM odoo_assetflow_transfer_requests WHERE id = ?',
+      [requestId]
+    );
+    const request = requests[0];
+    if (!request) throw new Error('Transfer request not found');
+    if (request.status !== 'REQUESTED') throw new Error('Request already processed');
+
+    if (session.role !== 'ADMIN' && session.role !== 'ASSET_MANAGER') {
+      if (session.role === 'DEPARTMENT_HEAD') {
+        const [deptHeads]: any[] = await query<any>(
+          'SELECT department_id FROM odoo_assetflow_users WHERE id = ?',
+          [session.id]
+        );
+        const deptHead = deptHeads[0];
+
+        const [requesters]: any[] = await query<any>(
+          'SELECT department_id FROM odoo_assetflow_users WHERE id = ?',
+          [request.requesting_user_id]
+        );
+        const requester = requesters[0];
+
+        if (!deptHead || !requester || requester.department_id !== deptHead.department_id) {
+          throw new Error('Unauthorized: Department Head can only reject internal requests');
+        }
+      } else {
+        throw new Error('Unauthorized: Insufficient permissions');
+      }
+    }
+
+    await query(
+      'UPDATE odoo_assetflow_transfer_requests SET status = "REJECTED" WHERE id = ?',
+      [requestId]
+    );
+
+    // Write audit log
+    const logId = crypto.randomUUID();
+    await query(
+      'INSERT INTO odoo_assetflow_audit_logs (id, user_id, action, details) VALUES (?, ?, ?, ?)',
+      [logId, session.id, 'REJECT_TRANSFER', JSON.stringify({ requestId })]
+    );
+
+    revalidatePath('/dashboard/allocations');
+    return { success: true };
+  } catch (error: any) {
+    console.error('Reject transfer error:', error);
+    return { success: false, message: error.message || 'Failed to reject transfer request' };
+  }
+}

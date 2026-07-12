@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { registerAsset } from '@/app/actions/assetActions';
-import { Plus, Search, Filter, SlidersHorizontal, Eye, X, BookOpen, AlertTriangle } from 'lucide-react';
+import { Plus, Search, Eye, X, BookOpen, AlertTriangle } from 'lucide-react';
 import { AssetCondition } from '@prisma/client';
 
 interface AssetsDirectoryProps {
@@ -138,7 +138,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
             placeholder="Search by Tag, Serial number, Location, or Name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-transparent text-white text-sm focus:outline-none placeholder:text-muted-foreground"
+            className="flex-1 bg-transparent text-foreground text-sm focus:outline-none placeholder:text-muted-foreground"
           />
         </div>
 
@@ -147,7 +147,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
           <select
             value={selectedCategoryFilter}
             onChange={(e) => setSelectedCategoryFilter(e.target.value)}
-            className="px-3 py-2.5 rounded-lg bg-secondary border border-border text-white text-xs focus:outline-none"
+            className="px-3 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-xs focus:outline-none"
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
@@ -159,7 +159,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
           <select
             value={selectedStatusFilter}
             onChange={(e) => setSelectedStatusFilter(e.target.value)}
-            className="px-3 py-2.5 rounded-lg bg-secondary border border-border text-white text-xs focus:outline-none"
+            className="px-3 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-xs focus:outline-none"
           >
             <option value="">All Statuses</option>
             <option value="AVAILABLE">Available</option>
@@ -172,7 +172,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
           {canManage && (
             <button
               onClick={() => setShowDrawer(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-xs shadow-md transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-xs shadow-md transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Register Asset
@@ -193,7 +193,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
       <div className="p-6 rounded-xl border border-border bg-card">
         <div className="overflow-x-auto border border-border/50 rounded-lg">
           <table className="w-full text-left text-sm text-muted-foreground">
-            <thead className="bg-secondary/50 text-xs font-bold uppercase tracking-wider text-white border-b border-border/50">
+            <thead className="bg-secondary/50 text-xs font-bold uppercase tracking-wider text-foreground border-b border-border/50">
               <tr>
                 <th className="p-4">Tag</th>
                 <th className="p-4">Asset Name</th>
@@ -211,8 +211,8 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
               ) : (
                 filteredAssets.map((asset) => (
                   <tr key={asset.id} className="hover:bg-secondary/20 transition-all">
-                    <td className="p-4 font-bold text-white tracking-wider">{asset.assetTag}</td>
-                    <td className="p-4 font-semibold text-white">
+                    <td className="p-4 font-bold text-foreground tracking-wider">{asset.assetTag}</td>
+                    <td className="p-4 font-semibold text-foreground">
                       <div>
                         <p>{asset.name}</p>
                         {asset.serialNumber && (
@@ -230,7 +230,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
                     <td className="p-4 text-right">
                       <button
                         onClick={() => setShowDetailModal(asset)}
-                        className="p-2 rounded hover:bg-secondary text-primary"
+                        className="p-2 rounded hover:bg-secondary text-primary cursor-pointer"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
@@ -248,8 +248,8 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-lg bg-card border-l border-border h-full p-6 flex flex-col gap-4 overflow-y-auto">
             <div className="flex justify-between items-center border-b border-border pb-4">
-              <h3 className="font-bold text-lg text-white">Register Corporate Asset</h3>
-              <button onClick={() => setShowDrawer(false)} className="text-muted-foreground hover:text-white">
+              <h3 className="font-bold text-lg text-foreground">Register Corporate Asset</h3>
+              <button onClick={() => setShowDrawer(false)} className="text-muted-foreground hover:text-foreground cursor-pointer">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -263,7 +263,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
                   placeholder="e.g. MacBook Pro M3"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none focus:border-primary"
+                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-primary"
                 />
               </div>
 
@@ -273,7 +273,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
                   required
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
                 >
                   <option value="">Select Category...</option>
                   {categories.map((cat) => (
@@ -290,7 +290,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
                     placeholder="S/N..."
                     value={serialNumber}
                     onChange={(e) => setSerialNumber(e.target.value)}
-                    className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none focus:border-primary"
+                    className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
 
@@ -302,7 +302,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
                     placeholder="e.g. 1500.00"
                     value={acquisitionCost}
                     onChange={(e) => setAcquisitionCost(e.target.value)}
-                    className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none focus:border-primary"
+                    className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
@@ -315,7 +315,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
                     required
                     value={acquisitionDate}
                     onChange={(e) => setAcquisitionDate(e.target.value)}
-                    className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                    className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
                   />
                 </div>
 
@@ -325,7 +325,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
                     required
                     value={condition}
                     onChange={(e) => setCondition(e.target.value as any)}
-                    className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none"
+                    className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none"
                   >
                     <option value="NEW">New</option>
                     <option value="GOOD">Good</option>
@@ -343,7 +343,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
                   placeholder="e.g. HQ Floor 3"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none focus:border-primary"
+                  className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-primary"
                 />
               </div>
 
@@ -355,7 +355,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
                   onChange={(e) => setSharedBookable(e.target.checked)}
                   className="w-4 h-4 rounded text-primary focus:ring-primary"
                 />
-                <label htmlFor="sharedBookable" className="text-xs font-bold text-white cursor-pointer select-none">
+                <label htmlFor="sharedBookable" className="text-xs font-bold text-foreground cursor-pointer select-none">
                   Mark as shared/bookable resource (e.g. Rooms/Vehicles)
                 </label>
               </div>
@@ -363,7 +363,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
               {/* Dynamic Categories Attributes Injection */}
               {schemaFields.length > 0 && (
                 <div className="flex flex-col gap-4 border-t border-border pt-4 mt-2">
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">Category Attributes</span>
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wider">Category Attributes</span>
                   {schemaFields.map(([key, type]) => (
                     <div key={key} className="flex flex-col gap-1.5">
                       <label className="text-xs font-bold text-muted-foreground uppercase">
@@ -373,7 +373,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
                         type={type === 'number' ? 'number' : 'text'}
                         value={customFieldsData[key] || ''}
                         onChange={(e) => handleCustomFieldChange(key, e.target.value)}
-                        className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none focus:border-primary"
+                        className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-primary"
                       />
                     </div>
                   ))}
@@ -383,7 +383,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full py-3 mt-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-all"
+                className="w-full py-3 mt-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-all cursor-pointer"
               >
                 {isPending ? 'Registering...' : 'Register Asset'}
               </button>
@@ -398,7 +398,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
           <div className="w-full max-w-lg bg-card border border-border rounded-xl p-6 flex flex-col gap-6 relative">
             <button 
               onClick={() => setShowDetailModal(null)} 
-              className="absolute top-4 right-4 text-muted-foreground hover:text-white"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -408,7 +408,7 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
                 Tag
               </div>
               <div>
-                <h4 className="font-bold text-lg text-white">{showDetailModal.name}</h4>
+                <h4 className="font-bold text-lg text-foreground">{showDetailModal.name}</h4>
                 <p className="text-xs text-muted-foreground tracking-wider font-mono uppercase">Tag: {showDetailModal.assetTag}</p>
               </div>
             </div>
@@ -416,21 +416,21 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
             <div className="grid grid-cols-2 gap-4 border-y border-border py-4 text-xs">
               <div>
                 <p className="text-muted-foreground font-semibold">Location</p>
-                <p className="text-white font-medium mt-0.5">{showDetailModal.location}</p>
+                <p className="text-foreground font-medium mt-0.5">{showDetailModal.location}</p>
               </div>
               <div>
                 <p className="text-muted-foreground font-semibold">Condition</p>
-                <p className="text-white font-medium mt-0.5">{showDetailModal.currentCondition}</p>
+                <p className="text-foreground font-medium mt-0.5">{showDetailModal.currentCondition}</p>
               </div>
               <div>
                 <p className="text-muted-foreground font-semibold">Acquisition Cost</p>
-                <p className="text-white font-medium mt-0.5">
+                <p className="text-foreground font-medium mt-0.5">
                   {showDetailModal.acquisitionCost ? `$${Number(showDetailModal.acquisitionCost).toFixed(2)}` : '--'}
                 </p>
               </div>
               <div>
                 <p className="text-muted-foreground font-semibold">Acquisition Date</p>
-                <p className="text-white font-medium mt-0.5">
+                <p className="text-foreground font-medium mt-0.5">
                   {new Date(showDetailModal.acquisitionDate).toLocaleDateString()}
                 </p>
               </div>
@@ -439,12 +439,12 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
             {/* Custom attributes display */}
             {showDetailModal.customFieldValues && Object.keys(showDetailModal.customFieldValues).length > 0 && (
               <div className="flex flex-col gap-2">
-                <span className="text-xs font-bold text-white uppercase tracking-wider">Attributes</span>
+                <span className="text-xs font-bold text-foreground uppercase tracking-wider">Attributes</span>
                 <div className="grid grid-cols-2 gap-3 bg-secondary/30 p-3 rounded-lg border border-border/50 text-xs">
                   {Object.entries(showDetailModal.customFieldValues).map(([k, v]) => (
                     <div key={k}>
                       <span className="text-muted-foreground font-bold capitalize">{k.replace('_', ' ')}: </span>
-                      <span className="text-white font-medium">{String(v)}</span>
+                      <span className="text-foreground font-medium">{String(v)}</span>
                     </div>
                   ))}
                 </div>

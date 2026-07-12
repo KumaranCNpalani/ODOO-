@@ -102,7 +102,7 @@ export async function verifyAuditItem(itemId: string, status: string, notes: str
   if (!session) throw new Error('Unauthorized');
 
   try {
-    const [items]: any[] = await query(
+    const items = await query<any>(
       'SELECT id, audit_cycle_id FROM odoo_assetflow_audit_items WHERE id = ?',
       [itemId]
     );
@@ -112,7 +112,7 @@ export async function verifyAuditItem(itemId: string, status: string, notes: str
       return { success: false, message: 'Audit item not found' };
     }
 
-    const [cycles]: any[] = await query(
+    const cycles = await query<any>(
       'SELECT status FROM odoo_assetflow_audit_cycles WHERE id = ?',
       [item.audit_cycle_id]
     );

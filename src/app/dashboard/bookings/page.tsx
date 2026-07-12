@@ -35,7 +35,7 @@ export default async function BookingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-2xl font-bold text-white tracking-tight">Resource Booking</h2>
+        <h2 className="text-2xl font-bold text-foreground tracking-tight">Resource Booking</h2>
         <p className="text-sm text-muted-foreground">Reserve conference rooms, company vehicles, and shared hardware</p>
       </div>
 

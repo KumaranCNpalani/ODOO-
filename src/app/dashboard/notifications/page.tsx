@@ -27,7 +27,7 @@ export default async function NotificationsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-2xl font-bold text-white tracking-tight">System Notifications</h2>
+        <h2 className="text-2xl font-bold text-foreground tracking-tight">System Notifications</h2>
         <p className="text-sm text-muted-foreground">Chronological audit trail of administrative, allocations, and booking events</p>
       </div>
 

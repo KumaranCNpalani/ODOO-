@@ -22,7 +22,7 @@ export default function LoginForm() {
         <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-primary/20">
           AF
         </div>
-        <h2 className="text-2xl font-bold text-white mt-3">
+        <h2 className="text-2xl font-bold text-foreground mt-3">
           {isLogin ? 'Welcome to AssetFlow' : 'Create an Account'}
         </h2>
         <p className="text-xs text-muted-foreground">
@@ -45,7 +45,7 @@ export default function LoginForm() {
               name="name"
               required
               placeholder="e.g. John Doe"
-              className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none focus:border-primary transition-all duration-200"
+              className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-primary transition-all duration-200"
             />
             {!isLogin && signupState?.errors?.name && (
               <span className="text-[10px] text-destructive font-semibold">{signupState.errors.name[0]}</span>
@@ -60,7 +60,7 @@ export default function LoginForm() {
             name="email"
             required
             placeholder="name@company.com"
-            className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none focus:border-primary transition-all duration-200"
+            className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-primary transition-all duration-200"
           />
           {errors?.email && (
             <span className="text-[10px] text-destructive font-semibold">{errors.email[0]}</span>
@@ -81,7 +81,7 @@ export default function LoginForm() {
             name="password"
             required
             placeholder="********"
-            className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-white text-sm focus:outline-none focus:border-primary transition-all duration-200"
+            className="px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-primary transition-all duration-200"
           />
           {errors?.password && (
             <span className="text-[10px] text-destructive font-semibold">{errors.password[0]}</span>
@@ -91,7 +91,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={pending}
-          className="w-full py-3 mt-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-sm shadow-lg shadow-primary/10 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 mt-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-sm shadow-lg shadow-primary/10 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {pending ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
         </button>
@@ -106,7 +106,7 @@ export default function LoginForm() {
               if (loginState) loginState.message = '';
               if (signupState) signupState.message = '';
             }}
-            className="text-primary hover:underline font-bold"
+            className="text-primary hover:underline font-bold cursor-pointer"
           >
             {isLogin ? 'Create an account' : 'Sign in'}
           </button>

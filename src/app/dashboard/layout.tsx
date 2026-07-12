@@ -3,6 +3,8 @@ import Sidebar from '@/components/Sidebar';
 import { redirect } from 'next/navigation';
 import { query } from '@/lib/db';
 import { initializeDatabase } from '@/lib/initDb';
+import ThemeToggle from '@/components/ThemeToggle';
+import CurrentDate from '@/components/CurrentDate';
 
 export default async function DashboardLayout({
   children,
@@ -47,8 +49,12 @@ export default async function DashboardLayout({
               Secure Session Active
             </span>
           </div>
-          <div className="text-xs text-muted-foreground font-semibold">
-            Local time: {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          
+          <div className="flex items-center gap-4">
+            <div className="text-xs text-muted-foreground font-semibold hidden md:block">
+              <CurrentDate />
+            </div>
+            <ThemeToggle />
           </div>
         </header>
 

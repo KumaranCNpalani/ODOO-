@@ -65,7 +65,7 @@ export default async function ReportsPage() {
       {/* Top Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Reports & Analytics</h2>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">Reports & Analytics</h2>
           <p className="text-sm text-muted-foreground">Actionable insights into corporate property utilization and life cycles</p>
         </div>
         
@@ -80,7 +80,7 @@ export default async function ReportsPage() {
         
         {/* Chart A: Utilization by Department */}
         <div className="p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
-          <h3 className="font-bold text-white text-sm flex items-center gap-2">
+          <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-primary" />
             Active Asset Allocation by Department
           </h3>
@@ -110,7 +110,7 @@ export default async function ReportsPage() {
 
         {/* Chart B: Maintenance Frequency by Category */}
         <div className="p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
-          <h3 className="font-bold text-white text-sm flex items-center gap-2">
+          <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-amber-500" />
             Repair Request Density by Category
           </h3>
@@ -144,18 +144,18 @@ export default async function ReportsPage() {
         
         {/* Most Used vs Idle Card */}
         <div className="lg:col-span-2 p-6 rounded-xl border border-border bg-card flex flex-col gap-5">
-          <h3 className="font-bold text-white text-base">Asset Utilization Index</h3>
+          <h3 className="font-bold text-foreground text-base">Asset Utilization Index</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* Most Used */}
             <div className="flex flex-col gap-3">
-              <span className="text-xs font-bold text-white uppercase tracking-wider">Most-Used Resources</span>
+              <span className="text-xs font-bold text-foreground uppercase tracking-wider">Most-Used Resources</span>
               <div className="flex flex-col gap-2.5">
                 {mostUsedResources.map((res: any) => (
                   <div key={res.asset_tag} className="p-3 rounded-lg bg-secondary/40 border border-border/50 flex justify-between items-center text-xs">
                     <div>
-                      <p className="font-bold text-white">{res.name}</p>
+                      <p className="font-bold text-foreground">{res.name}</p>
                       <p className="text-[10px] text-muted-foreground font-mono">{res.asset_tag} | {res.location}</p>
                     </div>
                     <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-bold">
@@ -168,14 +168,14 @@ export default async function ReportsPage() {
 
             {/* Idle */}
             <div className="flex flex-col gap-3">
-              <span className="text-xs font-bold text-white uppercase tracking-wider">Idle/Unused Assets</span>
+              <span className="text-xs font-bold text-foreground uppercase tracking-wider">Idle/Unused Assets</span>
               <div className="flex flex-col gap-2.5">
                 {idleAssets.map((res: any) => {
                   const daysIdle = Math.floor((new Date().getTime() - new Date(res.updated_at).getTime()) / (1000 * 60 * 60 * 24));
                   return (
                     <div key={res.asset_tag} className="p-3 rounded-lg bg-secondary/40 border border-border/50 flex justify-between items-center text-xs">
                       <div>
-                        <p className="font-bold text-white">{res.name}</p>
+                        <p className="font-bold text-foreground">{res.name}</p>
                         <p className="text-[10px] text-muted-foreground font-mono">{res.asset_tag}</p>
                       </div>
                       <span className="px-2 py-0.5 rounded bg-zinc-800 text-muted-foreground font-bold">
@@ -192,7 +192,7 @@ export default async function ReportsPage() {
 
         {/* Assets Due for Maintenance / Retirement */}
         <div className="lg:col-span-1 p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
-          <h3 className="font-bold text-white text-base">Alerts & Retirement</h3>
+          <h3 className="font-bold text-foreground text-base">Alerts & Retirement</h3>
           <div className="flex flex-col gap-3">
             {retiringAssets.length === 0 ? (
               <p className="text-xs text-muted-foreground py-6 text-center">No asset alerts active</p>
@@ -203,7 +203,7 @@ export default async function ReportsPage() {
                 return (
                   <div key={res.asset_tag} className="p-3.5 rounded-lg bg-secondary/40 border border-border/40 flex flex-col gap-1 text-xs">
                     <div className="flex justify-between items-center">
-                      <p className="font-bold text-white">{res.name}</p>
+                      <p className="font-bold text-foreground">{res.name}</p>
                       <span className="text-[9px] font-mono text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">
                         {res.asset_tag}
                       </span>

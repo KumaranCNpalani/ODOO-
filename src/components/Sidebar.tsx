@@ -102,7 +102,7 @@ export default function Sidebar({ user }: SidebarProps) {
             AF
           </div>
           <div>
-            <h1 className="font-bold text-lg leading-tight tracking-tight text-white">AssetFlow</h1>
+            <h1 className="font-bold text-lg leading-tight tracking-tight text-foreground">AssetFlow</h1>
             <span className="text-xs text-muted-foreground font-semibold">Odoo ERP Module</span>
           </div>
         </div>
@@ -120,8 +120,8 @@ export default function Sidebar({ user }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group",
                   isActive
-                    ? "bg-primary text-white shadow-md shadow-primary/10"
-                    : "text-muted-foreground hover:bg-muted hover:text-white"
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/10"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 )}
               >
                 <Icon className={cn(
@@ -142,7 +142,7 @@ export default function Sidebar({ user }: SidebarProps) {
             <User2 className="w-5 h-5 text-muted-foreground" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold truncate text-white">{user.name}</p>
+            <p className="text-sm font-semibold truncate text-foreground">{user.name}</p>
             <p className="text-xs text-muted-foreground truncate uppercase font-bold tracking-wider">
               {formatRole(user.role)}
             </p>

@@ -1,34 +1,99 @@
 @import "tailwindcss";
 
 @theme {
-  --color-border: #27272a;
-  --color-input: #27272a;
-  --color-ring: #0d9488;
-  --color-background: #0b0b0d;
-  --color-foreground: #fafafa;
-  --color-primary: #0d9488;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #18181b;
-  --color-secondary-foreground: #fafafa;
-  --color-destructive: #e11d48;
-  --color-destructive-foreground: #ffffff;
-  --color-muted: #27272a;
-  --color-muted-foreground: #a1a1aa;
-  --color-accent: #27272a;
-  --color-accent-foreground: #fafafa;
-  --color-popover: #09090b;
-  --color-popover-foreground: #fafafa;
-  --color-card: #121214;
-  --color-card-foreground: #fafafa;
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
   
   --radius-lg: 0.5rem;
   --radius-md: calc(0.5rem - 2px);
   --radius-sm: calc(0.5rem - 4px);
 }
 
+/* Light Theme Variables */
 :root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  
+  --primary: #0d9488;
+  --primary-foreground: #ffffff;
+  
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  
+  --border: #e2e8f0;
+  --ring: #0d9488;
+  
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --scrollbar-bg: #f8fafc;
+  --scrollbar-thumb: #cbd5e1;
+}
+
+/* Dark Theme Variables */
+.dark {
   --background: #0b0b0d;
   --foreground: #fafafa;
+  
+  --card: #121214;
+  --card-foreground: #fafafa;
+  
+  --popover: #09090b;
+  --popover-foreground: #fafafa;
+  
+  --primary: #0d9488;
+  --primary-foreground: #ffffff;
+  
+  --secondary: #18181b;
+  --secondary-foreground: #fafafa;
+  
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+  
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+  
+  --border: #27272a;
+  --ring: #0d9488;
+  
+  --glass-bg: rgba(18, 18, 20, 0.7);
+  --glass-border: rgba(39, 39, 42, 0.5);
+  --scrollbar-bg: #0b0b0d;
+  --scrollbar-thumb: #27272a;
 }
 
 body {
@@ -36,19 +101,20 @@ body {
   color: var(--foreground);
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   overflow-x: hidden;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 /* Glassmorphism effects */
 .glass-panel {
-  background: rgba(18, 18, 20, 0.7);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(39, 39, 42, 0.5);
+  border-right: 1px solid var(--glass-border);
 }
 
 .glass-card {
-  background: rgba(24, 24, 27, 0.4);
+  background: var(--glass-bg);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(39, 39, 42, 0.3);
+  border: 1px solid var(--glass-border);
 }
 
 /* Scrollbar customizations */
@@ -58,11 +124,11 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0b0d;
+  background: var(--scrollbar-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
