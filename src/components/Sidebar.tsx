@@ -98,12 +98,16 @@ export default function Sidebar({ user }: SidebarProps) {
       <div className="flex flex-col gap-6">
         {/* Header Logo */}
         <div className="flex items-center gap-3 px-2 py-3">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center font-bold text-white shadow-md shadow-primary/20">
-            AF
+          <div className="w-12 h-8 relative">
+            <img
+              src="/logo.png"
+              alt="AssetFlow Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
-            <h1 className="font-bold text-lg leading-tight tracking-tight text-foreground">AssetFlow</h1>
-            <span className="text-xs text-muted-foreground font-semibold">Odoo ERP Module</span>
+            <h1 className="font-bold text-base leading-tight tracking-tight text-foreground">AssetFlow</h1>
+            <span className="text-[10px] text-muted-foreground font-semibold">Odoo ERP Module</span>
           </div>
         </div>
 

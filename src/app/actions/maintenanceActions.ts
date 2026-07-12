@@ -2,6 +2,7 @@
 
 import { query, executeTransaction } from '@/lib/db';
 import { getSession } from '@/lib/auth';
+import { sendEmail } from '@/lib/mail';
 import { revalidatePath } from 'next/cache';
 
 export async function createMaintenanceRequest(data: {
@@ -118,6 +119,102 @@ export async function updateMaintenanceStatus(
       'INSERT INTO odoo_assetflow_audit_logs (id, user_id, action, details) VALUES (?, ?, ?, ?)',
       [logId, session.id, 'UPDATE_MAINTENANCE_STATUS', JSON.stringify({ requestId, newStatus })]
     );
+
+    // Fetch maintenance and user details for email notifications
+    try {
+      const details = await query<any>(
+        `SELECT r.*, a.name as asset_name, a.asset_tag, 
+                u.name as requester_name, u.email as requester_email,
+                t.name as tech_name, t.email as tech_email
+         FROM odoo_assetflow_maintenance_requests r
+         JOIN odoo_assetflow_assets a ON r.asset_id = a.id
+         JOIN odoo_assetflow_users u ON r.requested_by_id = u.id
+         LEFT JOIN odoo_assetflow_users t ON r.technician_id = t.id
+         WHERE r.id = ?`,
+        [requestId]
+      );
+      const req = details[0];
+
+      if (req) {
+        if (newStatus === 'TECHNICIAN_ASSIGNED') {
+          // Notify technician
+          if (req.tech_email) {
+            await sendEmail({
+              to: req.tech_email,
+              subject: `New Maintenance Ticket Assigned: ${req.asset_name}`,
+              html: `
+                <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                  <h3 style="color: #0d9488;">New Maintenance Assignment</h3>
+                  <p>Dear ${req.tech_name},</p>
+                  <p>You have been assigned to repair the following asset:</p>
+                  <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                    <tr>
+                      <td style="padding: 6px 0; font-weight: bold; color: #64748b; font-size: 13px;">Asset Name:</td>
+                      <td style="padding: 6px 0; color: #0f172a; font-size: 13px;">${req.asset_name}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 6px 0; font-weight: bold; color: #64748b; font-size: 13px;">Asset Tag:</td>
+                      <td style="padding: 6px 0; color: #0f172a; font-size: 13px;">${req.asset_tag}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 6px 0; font-weight: bold; color: #64748b; font-size: 13px;">Priority:</td>
+                      <td style="padding: 6px 0; font-weight: bold; color: #e11d48; font-size: 13px;">${req.priority}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 6px 0; font-weight: bold; color: #64748b; font-size: 13px;">Description:</td>
+                      <td style="padding: 6px 0; color: #0f172a; font-size: 13px;">${req.description}</td>
+                    </tr>
+                  </table>
+                </div>
+              `
+            });
+          }
+          // Notify requester
+          if (req.requester_email) {
+            await sendEmail({
+              to: req.requester_email,
+              subject: `Technician Assigned: ${req.asset_name}`,
+              html: `
+                <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                  <h3 style="color: #0d9488;">Technician Assigned</h3>
+                  <p>Dear ${req.requester_name},</p>
+                  <p>A technician has been assigned to look into your maintenance request for <strong>${req.asset_name}</strong>.</p>
+                  <p><strong>Assigned Technician:</strong> ${req.tech_name || 'Support Staff'}</p>
+                </div>
+              `
+            });
+          }
+        } else if (newStatus === 'RESOLVED') {
+          // Notify requester
+          if (req.requester_email) {
+            await sendEmail({
+              to: req.requester_email,
+              subject: `Maintenance Request Resolved: ${req.asset_name}`,
+              html: `
+                <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                  <h3 style="color: #0d9488;">Maintenance Request Resolved</h3>
+                  <p>Dear ${req.requester_name},</p>
+                  <p>Your maintenance request for the following asset has been resolved successfully:</p>
+                  <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                    <tr>
+                      <td style="padding: 6px 0; font-weight: bold; color: #64748b; font-size: 13px;">Asset Name:</td>
+                      <td style="padding: 6px 0; color: #0f172a; font-size: 13px;">${req.asset_name}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 6px 0; font-weight: bold; color: #64748b; font-size: 13px;">Resolution Notes:</td>
+                      <td style="padding: 6px 0; color: #0f172a; font-size: 13px; font-style: italic;">"${req.resolution_notes || 'Resolved and verified'}"</td>
+                    </tr>
+                  </table>
+                  <p>The asset status is now set to <strong>Available</strong>.</p>
+                </div>
+              `
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to send maintenance status emails:', err);
+    }
 
     revalidatePath('/dashboard/maintenance');
     revalidatePath('/dashboard/assets');

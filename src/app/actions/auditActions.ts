@@ -2,6 +2,7 @@
 
 import { query, executeTransaction } from '@/lib/db';
 import { getSession } from '@/lib/auth';
+import { sendEmail } from '@/lib/mail';
 import { revalidatePath } from 'next/cache';
 
 async function checkAdmin() {
@@ -87,6 +88,50 @@ export async function createAuditCycle(data: {
       'INSERT INTO odoo_assetflow_audit_logs (id, user_id, action, details) VALUES (?, ?, ?, ?)',
       [logId, session.id, 'CREATE_AUDIT_CYCLE', JSON.stringify({ cycleId: cycle.id, assetCount: data.auditorIds.length })]
     );
+
+    // Send email to all assigned auditors
+    if (data.auditorIds.length > 0) {
+      try {
+        const auditors = await query<any>(
+          'SELECT name, email FROM odoo_assetflow_users WHERE id IN (?) AND status = "ACTIVE"',
+          [data.auditorIds]
+        );
+        for (const auditor of auditors) {
+          if (auditor.email) {
+            await sendEmail({
+              to: auditor.email,
+              subject: `New Asset Audit Launched: ${data.name}`,
+              html: `
+                <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                  <h3 style="color: #0d9488;">New Audit Assignment</h3>
+                  <p>Dear ${auditor.name},</p>
+                  <p>A new physical asset verification cycle has been launched. You have been assigned as an auditor for this cycle:</p>
+                  <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                    <tr>
+                      <td style="padding: 6px 0; font-weight: bold; color: #64748b; font-size: 13px;">Cycle Name:</td>
+                      <td style="padding: 6px 0; color: #0f172a; font-size: 13px;">${data.name}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 6px 0; font-weight: bold; color: #64748b; font-size: 13px;">Location Scope:</td>
+                      <td style="padding: 6px 0; color: #0f172a; font-size: 13px;">${data.locationScope || 'Company Wide'}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 6px 0; font-weight: bold; color: #64748b; font-size: 13px;">Due Date:</td>
+                      <td style="padding: 6px 0; color: #0f172a; font-size: 13px;">${new Date(data.endDate).toLocaleDateString()}</td>
+                    </tr>
+                  </table>
+                  <p style="font-size: 12px; color: #64748b;">
+                    Please head over to the Audit Cycles dashboard to begin verifying the checklist of scoped assets.
+                  </p>
+                </div>
+              `
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to send auditor notification emails:', err);
+      }
+    }
 
     revalidatePath('/dashboard/audit');
     return { success: true, cycle };

@@ -202,6 +202,18 @@ export async function initializeDatabase() {
 
   console.log('Tables verified/created successfully!');
 
+  // Check and add reset_code columns to users table
+  try {
+    const columns: any[] = await query('SHOW COLUMNS FROM odoo_assetflow_users LIKE "reset_code"');
+    if (columns.length === 0) {
+      await query('ALTER TABLE odoo_assetflow_users ADD COLUMN reset_code VARCHAR(6) DEFAULT NULL');
+      await query('ALTER TABLE odoo_assetflow_users ADD COLUMN reset_code_expires_at TIMESTAMP NULL DEFAULT NULL');
+      console.log('Added reset_code columns to odoo_assetflow_users');
+    }
+  } catch (err) {
+    console.error('Error adding reset_code columns:', err);
+  }
+
   // Check if admin user already exists, if not seed default records
   const existingAdmin = await query('SELECT id FROM odoo_assetflow_users WHERE email = ?', ['admin@company.com']);
   if (existingAdmin.length === 0) {

@@ -2,6 +2,7 @@
 
 import { useState, useActionState } from 'react';
 import { login, signup } from '@/app/actions/authActions';
+import Link from 'next/link';
 
 export default function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,9 +19,13 @@ export default function LoginForm() {
       <div className="absolute -top-12 -left-12 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="flex flex-col items-center gap-2 mb-8 relative z-10">
-        <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-primary/20">
-          AF
+      <div className="flex flex-col items-center gap-2 mb-6 relative z-10">
+        <div className="w-24 h-16 relative">
+          <img
+            src="/logo.png"
+            alt="AssetFlow Logo"
+            className="w-full h-full object-contain"
+          />
         </div>
         <h2 className="text-2xl font-bold text-foreground mt-3">
           {isLogin ? 'Welcome to AssetFlow' : 'Create an Account'}
@@ -71,9 +76,9 @@ export default function LoginForm() {
           <div className="flex justify-between items-center">
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Password</label>
             {isLogin && (
-              <a href="#" className="text-[10px] text-primary hover:underline font-semibold">
+              <Link href="/login/forgot" className="text-[10px] text-primary hover:underline font-semibold">
                 Forgot password?
-              </a>
+              </Link>
             )}
           </div>
           <input
