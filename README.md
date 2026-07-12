@@ -2,7 +2,7 @@
 
 AssetFlow is a next-generation IT asset management registry and custody tracking system designed for organizations to catalog hardware, assign custodians, handle checkouts, manage bookings, orchestrate repairs, and run cyclical audit verifications.
 
-* **Live Deployment URL**: [https://odoo-assetflow-xi.vercel.app/login](https://odoo-assetflow-xi.vercel.app/login)
+* **Live Deployment URL**: [https://odoo-assetflow-xi.vercel.app/login](https://odoo-assetflow-xi.vercel.app)
 
 * Admin: admin@company.com / adminpassword
 * Normal: priya@company.com / employeepassword
