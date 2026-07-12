@@ -183,7 +183,6 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
               <span>Conflict: Requested time slot is unavailable.</span>
             </div>
           )}
-
           <button
             type="submit"
             disabled={isPending || hasConflict || !selectedAssetId}
@@ -192,7 +191,6 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
             {isPending ? 'Reserving...' : 'Confirm Reservation'}
           </button>
         </form>
-
         {message && (
           <div className={`p-3 rounded-lg border text-xs font-semibold text-center ${
             message.type === 'success' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-destructive/10 border-destructive/20 text-destructive'
@@ -272,8 +270,7 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
                 );
               })
             )}
-
-            {/* Overlap dynamic display marker */}
+              {/* Overlap dynamic display marker */}
             {hasConflict && (
               <div className="p-4 rounded-lg border border-dashed border-rose-500/40 bg-rose-500/5 text-rose-500 text-xs font-semibold flex justify-between items-center animate-pulse-slow">
                 <div className="flex items-center gap-2">
