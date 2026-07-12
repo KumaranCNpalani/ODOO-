@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from 'react';
 import { bookResource, cancelBooking } from '@/app/actions/bookingActions';
 import { Clock, X, AlertTriangle, CalendarRange } from 'lucide-react';
+import { downloadCSV } from '@/lib/csvUtils';
 
 interface BookingsConsoleProps {
   resources: any[];
@@ -15,6 +16,20 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
   const [selectedAssetId, setSelectedAssetId] = useState(resources[0]?.id || '');
   const [bookingDate, setBookingDate] = useState(new Date().toISOString().split('T')[0]);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleExportBookingsCSV = () => {
+    const headers = ['Booking ID', 'Resource Name', 'Booked By', 'Role', 'Start Time', 'End Time', 'Status'];
+    const rows = bookings.map(b => [
+      b.id,
+      b.asset?.name || 'Unknown',
+      b.bookedBy?.name || 'Unknown',
+      b.bookedBy?.role || '',
+      b.startTime ? new Date(b.startTime).toLocaleString() : '',
+      b.endTime ? new Date(b.endTime).toLocaleString() : '',
+      b.status
+    ]);
+    downloadCSV('bookings_export.csv', headers, rows);
+  };
 
   // Mounted state to handle locale date hydration
   const [mounted, setMounted] = useState(false);
@@ -193,7 +208,17 @@ export default function BookingsConsole({ resources, bookings, currentUserId }: 
         {/* Scheduler Grid Sheet */}
         <div className="p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
           <div className="flex justify-between items-center border-b border-border pb-3">
-            <h3 className="font-bold text-foreground text-base">Timeline Schedule</h3>
+            <div className="flex items-center gap-3">
+              <h3 className="font-bold text-foreground text-base">Timeline Schedule</h3>
+              {bookings.length > 0 && (
+                <button
+                  onClick={handleExportBookingsCSV}
+                  className="px-2 py-1 rounded bg-secondary hover:bg-secondary/80 border border-border text-foreground text-[10px] font-bold transition-all cursor-pointer shadow-sm"
+                >
+                  Export CSV
+                </button>
+              )}
+            </div>
             <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1.5">
               <CalendarRange className="w-4 h-4 text-primary" />
               {renderBookingDate()}

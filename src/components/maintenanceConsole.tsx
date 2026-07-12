@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { createMaintenanceRequest, updateMaintenanceStatus } from '@/app/actions/maintenanceActions';
 import { Plus, ArrowLeft, ArrowRight, User, X } from 'lucide-react';
+import { downloadCSV } from '@/lib/csvUtils';
 import { MaintenancePriority, MaintenanceStatus } from '@prisma/client';
 
 interface MaintenanceConsoleProps {
@@ -16,6 +17,21 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
   const [isPending, startTransition] = useTransition();
   const [showDrawer, setShowDrawer] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleExportMaintenanceCSV = () => {
+    const headers = ['Request ID', 'Asset Tag', 'Asset Name', 'Priority', 'Status', 'Description', 'Technician', 'Created At'];
+    const rows = requests.map(r => [
+      r.id,
+      r.asset?.assetTag || 'Unknown',
+      r.asset?.name || 'Unknown',
+      r.priority,
+      r.status,
+      r.description || '',
+      r.technician?.name || 'Unassigned',
+      r.createdAt ? new Date(r.createdAt).toLocaleString() : ''
+    ]);
+    downloadCSV('maintenance_tickets_export.csv', headers, rows);
+  };
 
   // Form States
   const [selectedAssetId, setSelectedAssetId] = useState('');
@@ -106,13 +122,23 @@ export default function MaintenanceConsole({ requests, assets, technicians, curr
             Move cards to update asset statuses automatically
           </p>
         </div>
-        <button
-          onClick={() => setShowDrawer(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-xs transition-all shadow-md cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          Raise Request
-        </button>
+        <div className="flex items-center gap-2">
+          {requests.length > 0 && (
+            <button
+              onClick={handleExportMaintenanceCSV}
+              className="px-3 py-2.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-foreground text-xs font-bold transition-all cursor-pointer shadow-sm"
+            >
+              Export CSV
+            </button>
+          )}
+          <button
+            onClick={() => setShowDrawer(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-xs transition-all shadow-md cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Raise Request
+          </button>
+        </div>
       </div>
 
       {message && (

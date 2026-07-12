@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { registerAsset } from '@/app/actions/assetActions';
+import { importAssetsAction } from '@/app/actions/importActions';
+import { parseCSV, downloadCSV } from '@/lib/csvUtils';
 import { Plus, Search, Eye, X, BookOpen, AlertTriangle } from 'lucide-react';
 import { AssetCondition } from '@prisma/client';
 
@@ -19,6 +21,93 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
   const [showDrawer, setShowDrawer] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState<any | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Import assets from CSV
+  const handleImportAssetsCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setMessage(null);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const parsed = parseCSV(text);
+        if (parsed.length <= 1) {
+          setMessage({ type: 'error', text: 'CSV is empty or missing headers.' });
+          return;
+        }
+
+        const headers = parsed[0].map(h => h.toLowerCase().trim());
+        const nameIdx = headers.indexOf('name');
+        const catIdx = headers.indexOf('category');
+        const serialIdx = headers.indexOf('serial number');
+        const costIdx = headers.indexOf('acquisition cost');
+        const dateIdx = headers.indexOf('acquisition date');
+        const condIdx = headers.indexOf('condition');
+        const locIdx = headers.indexOf('location');
+        const bookableIdx = headers.indexOf('bookable');
+
+        if (nameIdx === -1 || catIdx === -1) {
+          setMessage({ type: 'error', text: 'CSV must contain at least "Name" and "Category" columns.' });
+          return;
+        }
+
+        const assetsData = parsed.slice(1).map(row => {
+          const costRaw = parseFloat(row[costIdx] || '');
+          const isBookable = row[bookableIdx]?.toLowerCase().trim();
+          return {
+            name: row[nameIdx] || '',
+            categoryName: row[catIdx] || '',
+            serialNumber: serialIdx !== -1 ? row[serialIdx] || null : null,
+            acquisitionCost: isNaN(costRaw) ? null : costRaw,
+            acquisitionDate: dateIdx !== -1 ? row[dateIdx] || '' : '',
+            condition: condIdx !== -1 ? row[condIdx]?.toUpperCase() || 'GOOD' : 'GOOD',
+            location: locIdx !== -1 ? row[locIdx] || 'HQ Office' : 'HQ Office',
+            sharedBookable: isBookable === 'yes' || isBookable === 'true' || isBookable === '1',
+          };
+        });
+
+        startTransition(async () => {
+          const result = await importAssetsAction(assetsData);
+          if (result.success && 'createdCount' in result) {
+            let msg = `Successfully imported ${result.createdCount} assets!`;
+            if ('errors' in result && result.errors && result.errors.length > 0) {
+              msg += ` Note: ${result.errors.length} rows skipped with errors. (Check developer console for details)`;
+              console.warn('Import errors:', result.errors);
+            }
+            setMessage({
+              type: 'success',
+              text: msg,
+            });
+          } else {
+            setMessage({ type: 'error', text: (result as any).message || 'Import failed.' });
+          }
+        });
+      } catch (err: any) {
+        setMessage({ type: 'error', text: 'Error parsing CSV file.' });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleExportAssetsCSV = () => {
+    const headers = ['Tag', 'Name', 'Category', 'Serial Number', 'Acquisition Date', 'Cost', 'Condition', 'Location', 'Status', 'Bookable'];
+    const rows = filteredAssets.map(asset => [
+      asset.assetTag,
+      asset.name,
+      asset.category?.name || 'Unassigned',
+      asset.serialNumber || '',
+      asset.acquisitionDate ? new Date(asset.acquisitionDate).toLocaleDateString() : '',
+      asset.acquisitionCost || '',
+      asset.currentCondition || asset.condition || '',
+      asset.location,
+      asset.status,
+      asset.sharedBookable ? 'Yes' : 'No'
+    ]);
+    downloadCSV('assets_export.csv', headers, rows);
+  };
 
   // Form States
   const [name, setName] = useState('');
@@ -169,17 +258,41 @@ export default function AssetsDirectory({ assets, categories, userRole }: Assets
             <option value="RETIRED">Retired</option>
           </select>
 
+          <button
+            onClick={handleExportAssetsCSV}
+            className="px-3 py-2.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-foreground text-xs font-bold transition-all cursor-pointer shadow-sm"
+          >
+            Export CSV
+          </button>
+
           {canManage && (
-            <button
-              onClick={() => setShowDrawer(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-xs shadow-md transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              Register Asset
-            </button>
+            <>
+              <label className="px-3 py-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border border-primary/20">
+                Import CSV
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleImportAssetsCSV}
+                  className="hidden"
+                />
+              </label>
+              <button
+                onClick={() => setShowDrawer(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-xs shadow-md transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                Register Asset
+              </button>
+            </>
           )}
         </div>
       </div>
+
+      {canManage && (
+        <div className="p-2.5 rounded border border-border bg-secondary/50 text-[10px] text-muted-foreground">
+          <strong>CSV Asset Import Guide</strong>: Required columns: <code>Name, Category</code>. Optional: <code>Serial Number, Acquisition Date, Acquisition Cost, Condition, Location, Bookable (yes/no)</code>.
+        </div>
+      )}
 
       {message && (
         <div className={`p-3 rounded-lg border text-xs font-semibold text-center ${

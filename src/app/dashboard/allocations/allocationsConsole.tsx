@@ -9,6 +9,7 @@ import {
   rejectTransferRequest 
 } from '@/app/actions/assetActions';
 import { Search, AlertTriangle, Calendar, Check, X } from 'lucide-react';
+import { downloadCSV } from '@/lib/csvUtils';
 import { AssetCondition } from '@prisma/client';
 
 interface AllocationsConsoleProps {
@@ -23,6 +24,20 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
   const [searchTag, setSearchTag] = useState('');
   const [selectedAsset, setSelectedAsset] = useState<any | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleExportTransfersCSV = () => {
+    const headers = ['Request ID', 'Asset Name', 'Asset Tag', 'Requesting User', 'Target User', 'Remarks', 'Status'];
+    const rows = transfers.map(t => [
+      t.id,
+      t.asset.name,
+      t.asset.assetTag,
+      t.requestingUser.name,
+      t.targetUser?.name || 'No User',
+      t.remarks || '',
+      t.status
+    ]);
+    downloadCSV('transfers_export.csv', headers, rows);
+  };
 
   // Allocation Form
   const [targetUserId, setTargetUserId] = useState('');
@@ -388,7 +403,17 @@ export default function AllocationsConsole({ assets, users, transfers, currentUs
         
         {/* Active Transfer Requests */}
         <div className="p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
-          <h3 className="font-bold text-foreground text-base">Transfer Approvals</h3>
+          <div className="flex justify-between items-center">
+            <h3 className="font-bold text-foreground text-base">Transfer Approvals</h3>
+            {transfers.length > 0 && (
+              <button
+                onClick={handleExportTransfersCSV}
+                className="px-2 py-1 rounded bg-secondary hover:bg-secondary/80 border border-border text-foreground text-[10px] font-bold transition-all cursor-pointer shadow-sm"
+              >
+                Export CSV
+              </button>
+            )}
+          </div>
           <div className="flex flex-col gap-3">
             {transfers.length === 0 ? (
               <p className="text-xs text-muted-foreground py-6 text-center">No pending transfers found</p>

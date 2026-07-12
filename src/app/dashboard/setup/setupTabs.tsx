@@ -12,6 +12,8 @@ import {
   updateEmployee, 
   deleteEmployee 
 } from '@/app/actions/setupActions';
+import { importEmployeesAction } from '@/app/actions/importActions';
+import { parseCSV, downloadCSV } from '@/lib/csvUtils';
 import { Plus, Check, X, Shield, Users, Layers, Award, Edit2, Trash2, ShieldAlert } from 'lucide-react';
 
 interface SetupTabsProps {
@@ -24,6 +26,72 @@ export default function SetupTabs({ departments, categories, users }: SetupTabsP
   const [activeTab, setActiveTab] = useState<'departments' | 'categories' | 'employees'>('departments');
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Import employees from CSV
+  const handleImportEmployeesCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setMessage(null);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const parsed = parseCSV(text);
+        if (parsed.length <= 1) {
+          setMessage({ type: 'error', text: 'CSV is empty or missing headers.' });
+          return;
+        }
+
+        const headers = parsed[0].map(h => h.toLowerCase().trim());
+        const nameIdx = headers.indexOf('name');
+        const emailIdx = headers.indexOf('email');
+        const roleIdx = headers.indexOf('role');
+        const deptIdx = headers.indexOf('department');
+
+        if (nameIdx === -1 || emailIdx === -1) {
+          setMessage({ type: 'error', text: 'CSV must contain at least "Name" and "Email" columns.' });
+          return;
+        }
+
+        const employeesData = parsed.slice(1).map(row => ({
+          name: row[nameIdx] || '',
+          email: row[emailIdx] || '',
+          role: roleIdx !== -1 ? row[roleIdx] || 'EMPLOYEE' : 'EMPLOYEE',
+          departmentName: deptIdx !== -1 ? row[deptIdx] || '' : '',
+        }));
+
+        startTransition(async () => {
+          const result = await importEmployeesAction(employeesData);
+          if (result.success && 'createdCount' in result) {
+            setMessage({
+              type: 'success',
+              text: `Successfully imported ${result.createdCount} employees! (Skipped/Existing: ${result.skippedCount})`,
+            });
+          } else {
+            setMessage({ type: 'error', text: (result as any).message || 'Import failed.' });
+          }
+        });
+      } catch (err: any) {
+        setMessage({ type: 'error', text: 'Error parsing CSV file.' });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleExportEmployeesCSV = () => {
+    const headers = ['ID', 'Name', 'Email', 'Role', 'Department', 'Status'];
+    const rows = users.map(user => [
+      user.id,
+      user.name,
+      user.email,
+      user.role,
+      user.department?.name || 'Unassigned',
+      user.status
+    ]);
+    downloadCSV('employees_export.csv', headers, rows);
+  };
 
   // Edit Modals Controllers
   const [editingDept, setEditingDept] = useState<any | null>(null);
@@ -651,7 +719,29 @@ export default function SetupTabs({ departments, categories, users }: SetupTabsP
 
           {/* Employee Directory List */}
           <div className="lg:col-span-2 p-6 rounded-xl border border-border bg-card flex flex-col gap-4">
-            <h3 className="font-bold text-foreground text-base">Employee Directory</h3>
+            <div className="flex justify-between items-center flex-wrap gap-2">
+              <h3 className="font-bold text-foreground text-base">Employee Directory</h3>
+              <div className="flex items-center gap-2">
+                <label className="px-3 py-1.5 rounded bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+                  Import CSV
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleImportEmployeesCSV}
+                    className="hidden"
+                  />
+                </label>
+                <button
+                  onClick={handleExportEmployeesCSV}
+                  className="px-3 py-1.5 rounded bg-secondary hover:bg-secondary/80 border border-border text-foreground text-xs font-bold transition-all cursor-pointer"
+                >
+                  Export CSV
+                </button>
+              </div>
+            </div>
+            <div className="p-2.5 rounded border border-border bg-secondary/50 text-[10px] text-muted-foreground">
+              <strong>CSV Import Guide</strong>: Column headers must be exactly: <code>Name, Email, Role, Department</code>. Default password will be set to <code>Welcome@AssetFlow2026</code>.
+            </div>
             <div className="overflow-x-auto border border-border/50 rounded-lg">
               <table className="w-full text-left text-sm text-muted-foreground">
                 <thead className="bg-secondary/50 text-xs font-bold uppercase tracking-wider text-foreground border-b border-border/50">

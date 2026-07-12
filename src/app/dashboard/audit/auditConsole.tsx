@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from 'react';
 import { createAuditCycle, verifyAuditItem, closeAuditCycle } from '@/app/actions/auditActions';
 import { ClipboardCheck, ShieldAlert, MapPin, Calendar, X } from 'lucide-react';
+import { downloadCSV } from '@/lib/csvUtils';
 import { AuditItemStatus } from '@prisma/client';
 
 interface AuditConsoleProps {
@@ -16,6 +17,21 @@ interface AuditConsoleProps {
 export default function AuditConsole({ activeCycle, departments, users, currentUser, pastCycles }: AuditConsoleProps) {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleExportActiveChecklistCSV = () => {
+    if (!activeCycle) return;
+    const headers = ['Asset Tag', 'Asset Name', 'Expected Location', 'Checked By', 'Verification Status', 'Notes', 'Verified At'];
+    const rows = activeCycle.items.map((item: any) => [
+      item.asset.assetTag,
+      item.asset.name,
+      item.asset.location,
+      item.verifiedBy?.name || 'Pending',
+      item.status,
+      item.verificationNotes || '',
+      item.verifiedAt ? new Date(item.verifiedAt).toLocaleString() : ''
+    ]);
+    downloadCSV('active_audit_checklist.csv', headers, rows);
+  };
   
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -315,7 +331,15 @@ export default function AuditConsole({ activeCycle, departments, users, currentU
 
             {/* Verification Checklist Table */}
             <div className="p-6 rounded-xl border border-border bg-card">
-              <h4 className="font-bold text-foreground text-base mb-4">Asset Verification Checklist</h4>
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-bold text-foreground text-base">Asset Verification Checklist</h4>
+                <button
+                  onClick={handleExportActiveChecklistCSV}
+                  className="px-2.5 py-1.5 rounded bg-secondary hover:bg-secondary/80 border border-border text-foreground text-xs font-bold transition-all cursor-pointer shadow-sm"
+                >
+                  Export CSV
+                </button>
+              </div>
               <div className="overflow-x-auto border border-border/50 rounded-lg">
                 <table className="w-full text-left text-sm text-muted-foreground">
                   <thead className="bg-secondary/50 text-xs font-bold uppercase tracking-wider text-foreground border-b border-border/50">

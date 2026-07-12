@@ -1,7 +1,9 @@
 import { query } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { BarChart3, TrendingUp, AlertCircle, Calendar, Download } from 'lucide-react';
+import { BarChart3, TrendingUp, AlertCircle, Calendar } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
 
 export default async function ReportsPage() {
   const session = await getSession();
@@ -9,11 +11,12 @@ export default async function ReportsPage() {
     redirect('/dashboard');
   }
 
-  // 1. Fetch Department Allocation Stats using direct subquery counts
+  // 1. Fetch Department Allocation Stats using direct subquery counts (direct + user-assigned)
   const departmentData = await query<any>(
     `SELECT d.name, 
       (SELECT COUNT(*) FROM odoo_assetflow_allocations al 
-       WHERE al.allocated_to_dept_id = d.id AND al.is_active = 1) as count 
+       LEFT JOIN odoo_assetflow_users u ON al.allocated_to_user_id = u.id
+       WHERE (al.allocated_to_dept_id = d.id OR u.department_id = d.id) AND al.is_active = 1) as count 
      FROM odoo_assetflow_departments d 
      WHERE d.status = "ACTIVE" 
      ORDER BY name ASC`
@@ -68,11 +71,6 @@ export default async function ReportsPage() {
           <h2 className="text-2xl font-bold text-foreground tracking-tight">Reports & Analytics</h2>
           <p className="text-sm text-muted-foreground">Actionable insights into corporate property utilization and life cycles</p>
         </div>
-        
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-border text-white font-semibold text-xs transition-all shadow-md">
-          <Download className="w-4 h-4" />
-          Export PDF Report
-        </button>
       </div>
 
       {/* Visual Analytics Charts Grid */}
@@ -89,7 +87,7 @@ export default async function ReportsPage() {
             {departmentData.map((dept: any, index: number) => {
               const pct = (dept.count / maxAllocations) * 100;
               return (
-                <div key={index} className="flex flex-col items-center group relative flex-1">
+                <div key={index} className="h-full flex flex-col justify-end items-center group relative flex-1">
                   {/* Tooltip */}
                   <div className="absolute -top-10 scale-0 group-hover:scale-100 transition-all bg-zinc-900 border border-border px-2 py-1 rounded text-[10px] font-bold text-white z-10">
                     {dept.count} allocated
@@ -97,7 +95,7 @@ export default async function ReportsPage() {
                   {/* Bar */}
                   <div 
                     style={{ height: `${Math.max(pct, 5)}%` }} 
-                    className="w-full max-w-[40px] rounded-t-md bg-gradient-to-t from-primary/60 to-primary group-hover:opacity-80 transition-all duration-300 shadow-lg shadow-primary/10"
+                    className="w-full max-w-[40px] rounded-t-md bg-gradient-to-t from-teal-500/60 to-teal-600 hover:from-teal-500 hover:to-teal-700 transition-all duration-300 shadow-lg shadow-teal-500/20"
                   ></div>
                   <span className="text-[10px] text-muted-foreground font-semibold mt-2 text-center truncate max-w-[80px]">
                     {dept.name.split(' ')[0]}
@@ -119,7 +117,7 @@ export default async function ReportsPage() {
             {maintenanceData.map((cat: any, index: number) => {
               const pct = (cat.count / maxMaintenance) * 100;
               return (
-                <div key={index} className="flex flex-col items-center group relative flex-1">
+                <div key={index} className="h-full flex flex-col justify-end items-center group relative flex-1">
                   {/* Tooltip */}
                   <div className="absolute -top-10 scale-0 group-hover:scale-100 transition-all bg-zinc-900 border border-border px-2 py-1 rounded text-[10px] font-bold text-white z-10">
                     {cat.count} repairs
@@ -127,7 +125,7 @@ export default async function ReportsPage() {
                   {/* Bar */}
                   <div 
                     style={{ height: `${Math.max(pct, 5)}%` }} 
-                    className="w-full max-w-[40px] rounded-t-md bg-gradient-to-t from-amber-500/50 to-amber-500 group-hover:opacity-80 transition-all duration-300 shadow-lg shadow-amber-500/10"
+                    className="w-full max-w-[40px] rounded-t-md bg-gradient-to-t from-amber-400/60 to-amber-500 hover:from-amber-400 hover:to-amber-600 transition-all duration-300 shadow-lg shadow-amber-500/20"
                   ></div>
                   <span className="text-[10px] text-muted-foreground font-semibold mt-2 text-center truncate max-w-[80px]">
                     {cat.name}
