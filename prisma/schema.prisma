@@ -1,0 +1,302 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  ASSET_MANAGER
+  DEPARTMENT_HEAD
+  EMPLOYEE
+}
+
+enum StatusType {
+  ACTIVE
+  INACTIVE
+}
+
+enum AssetStatus {
+  AVAILABLE
+  ALLOCATED
+  RESERVED
+  UNDER_MAINTENANCE
+  LOST
+  RETIRED
+  DISPOSED
+}
+
+enum AssetCondition {
+  NEW
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+}
+
+enum TransferStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+}
+
+enum BookingStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum MaintenanceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  TECHNICIAN_ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum AuditStatus {
+  IN_PROGRESS
+  CLOSED
+}
+
+enum AuditItemStatus {
+  PENDING
+  VERIFIED
+  MISSING
+  DAMAGED
+}
+
+model User {
+  id             String     @id @default(uuid()) @db.VarChar(36)
+  name           String
+  email          String     @unique
+  passwordHash   String     @map("password_hash")
+  role           UserRole   @default(EMPLOYEE)
+  departmentId   String?    @map("department_id") @db.VarChar(36)
+  status         StatusType @default(ACTIVE)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  department     Department? @relation("UserDepartment", fields: [departmentId], references: [id], onDelete: SetNull)
+  headedDepartment Department[] @relation("DepartmentHead")
+  allocations    Allocation[] @relation("AllocationUser")
+  createdAllocations Allocation[] @relation("AllocatedByUser")
+  requestedTransfers TransferRequest[] @relation("RequestingUser")
+  targetTransfers TransferRequest[] @relation("TargetUser")
+  approvedTransfers TransferRequest[] @relation("ApprovedByUser")
+  bookings       Booking[]
+  maintenanceRequests MaintenanceRequest[] @relation("MaintenanceRequester")
+  technicianRequests MaintenanceRequest[] @relation("MaintenanceTechnician")
+  approvedMaintenance MaintenanceRequest[] @relation("MaintenanceApprover")
+  auditAuditors  AuditAuditor[]
+  verifiedAuditItems AuditItem[]
+  auditLogs      AuditLog[]
+
+  @@map("odoo_assetflow_users")
+}
+
+model Department {
+  id                 String     @id @default(uuid()) @db.VarChar(36)
+  name               String     @unique
+  parentDepartmentId String?    @map("parent_department_id") @db.VarChar(36)
+  headUserId         String?    @map("head_user_id") @db.VarChar(36)
+  status             StatusType @default(ACTIVE)
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+
+  parentDepartment   Department? @relation("DepartmentHierarchy", fields: [parentDepartmentId], references: [id], onDelete: SetNull)
+  subDepartments     Department[] @relation("DepartmentHierarchy")
+  headUser           User?      @relation("DepartmentHead", fields: [headUserId], references: [id], onDelete: SetNull)
+  users              User[]     @relation("UserDepartment")
+  allocations        Allocation[] @relation("AllocationDept")
+  targetTransfers    TransferRequest[] @relation("TransferTargetDept")
+  auditCycles        AuditCycle[]
+
+  @@map("odoo_assetflow_departments")
+}
+
+model AssetCategory {
+  id                  String   @id @default(uuid()) @db.VarChar(36)
+  name                String   @unique
+  description         String?  @db.Text
+  customFieldsSchema  Json?    @map("custom_fields_schema")
+  createdAt           DateTime @default(now()) @map("created_at")
+  assets              Asset[]
+
+  @@map("odoo_assetflow_asset_categories")
+}
+
+model Asset {
+  id                 String         @id @default(uuid()) @db.VarChar(36)
+  assetTag           String         @unique @map("asset_tag")
+  name               String
+  categoryId         String         @map("category_id") @db.VarChar(36)
+  serialNumber       String?        @unique @map("serial_number")
+  acquisitionDate    DateTime       @map("acquisition_date")
+  acquisitionCost    Decimal?       @map("acquisition_cost") @db.Decimal(12, 2)
+  currentCondition   AssetCondition @default(GOOD) @map("current_condition")
+  location           String
+  status             AssetStatus    @default(AVAILABLE)
+  sharedBookable     Boolean        @default(false) @map("shared_bookable")
+  customFieldValues  Json?          @map("custom_field_values")
+  photoUrl           String?        @map("photo_url") @db.VarChar(512)
+  documentUrls       Json?          @map("document_urls")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+
+  category           AssetCategory  @relation(fields: [categoryId], references: [id])
+  allocations        Allocation[]
+  transfers          TransferRequest[]
+  bookings           Booking[]
+  maintenanceRequests MaintenanceRequest[]
+  auditItems         AuditItem[]
+
+  @@map("odoo_assetflow_assets")
+}
+
+model Allocation {
+  id                  String         @id @default(uuid()) @db.VarChar(36)
+  assetId             String         @map("asset_id") @db.VarChar(36)
+  allocatedToUserId   String?        @map("allocated_to_user_id") @db.VarChar(36)
+  allocatedToDeptId   String?        @map("allocated_to_dept_id") @db.VarChar(36)
+  allocatedById       String         @map("allocated_by_id") @db.VarChar(36)
+  allocationDate      DateTime       @default(now()) @map("allocation_date")
+  expectedReturnDate  DateTime?      @map("expected_return_date")
+  actualReturnDate    DateTime?      @map("actual_return_date")
+  conditionOnReturn   AssetCondition? @map("condition_on_return")
+  returnNotes         String?        @map("return_notes") @db.Text
+  isActive            Boolean        @default(true) @map("is_active")
+
+  asset               Asset          @relation(fields: [assetId], references: [id])
+  allocatedToUser     User?          @relation("AllocationUser", fields: [allocatedToUserId], references: [id], onDelete: SetNull)
+  allocatedToDept     Department?    @relation("AllocationDept", fields: [allocatedToDeptId], references: [id], onDelete: SetNull)
+  allocatedBy         User           @relation("AllocatedByUser", fields: [allocatedById], references: [id])
+
+  @@map("odoo_assetflow_allocations")
+}
+
+model TransferRequest {
+  id                 String         @id @default(uuid()) @db.VarChar(36)
+  assetId            String         @map("asset_id") @db.VarChar(36)
+  requestingUserId   String         @map("requesting_user_id") @db.VarChar(36)
+  targetUserId       String?        @map("target_user_id") @db.VarChar(36)
+  targetDeptId       String?        @map("target_dept_id") @db.VarChar(36)
+  status             TransferStatus @default(REQUESTED)
+  approvedById       String?        @map("approved_by_id") @db.VarChar(36)
+  remarks            String?        @db.Text
+  createdAt          DateTime       @default(now()) @map("created_at")
+
+  asset              Asset          @relation(fields: [assetId], references: [id])
+  requestingUser     User           @relation("RequestingUser", fields: [requestingUserId], references: [id])
+  targetUser         User?          @relation("TargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  targetDept         Department?    @relation("TransferTargetDept", fields: [targetDeptId], references: [id], onDelete: SetNull)
+  approvedBy         User?          @relation("ApprovedByUser", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  @@map("odoo_assetflow_transfer_requests")
+}
+
+model Booking {
+  id             String        @id @default(uuid()) @db.VarChar(36)
+  assetId        String        @map("asset_id") @db.VarChar(36)
+  bookedById     String        @map("booked_by_id") @db.VarChar(36)
+  startTime      DateTime      @map("start_time")
+  endTime        DateTime      @map("end_time")
+  status         BookingStatus @default(UPCOMING)
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  asset          Asset         @relation(fields: [assetId], references: [id])
+  bookedBy       User          @relation(fields: [bookedById], references: [id])
+
+  @@map("odoo_assetflow_bookings")
+}
+
+model MaintenanceRequest {
+  id              String              @id @default(uuid()) @db.VarChar(36)
+  assetId         String              @map("asset_id") @db.VarChar(36)
+  requestedById   String              @map("requested_by_id") @db.VarChar(36)
+  priority        MaintenancePriority @default(MEDIUM)
+  status          MaintenanceStatus   @default(PENDING)
+  description     String              @db.Text
+  photoUrl        String?             @map("photo_url") @db.VarChar(512)
+  technicianId    String?             @map("technician_id") @db.VarChar(36)
+  resolutionNotes String?             @map("resolution_notes") @db.Text
+  approvedById    String?             @map("approved_by_id") @db.VarChar(36)
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  asset           Asset               @relation(fields: [assetId], references: [id])
+  requestedBy     User                @relation("MaintenanceRequester", fields: [requestedById], references: [id])
+  technician      User?               @relation("MaintenanceTechnician", fields: [technicianId], references: [id], onDelete: SetNull)
+  approvedBy      User?               @relation("MaintenanceApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  @@map("odoo_assetflow_maintenance_requests")
+}
+
+model AuditCycle {
+  id                 String      @id @default(uuid()) @db.VarChar(36)
+  name               String
+  departmentScopeId  String?     @map("department_scope_id") @db.VarChar(36)
+  locationScope      String?     @map("location_scope")
+  startDate          DateTime    @map("start_date")
+  endDate            DateTime    @map("end_date")
+  status             AuditStatus @default(IN_PROGRESS)
+  createdAt          DateTime    @default(now()) @map("created_at")
+
+  departmentScope    Department? @relation(fields: [departmentScopeId], references: [id], onDelete: SetNull)
+  auditors           AuditAuditor[]
+  items              AuditItem[]
+
+  @@map("odoo_assetflow_audit_cycles")
+}
+
+model AuditAuditor {
+  auditCycleId String     @map("audit_cycle_id") @db.VarChar(36)
+  userId       String     @map("user_id") @db.VarChar(36)
+
+  auditCycle   AuditCycle @relation(fields: [auditCycleId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([auditCycleId, userId])
+  @@map("odoo_assetflow_audit_auditors")
+}
+
+model AuditItem {
+  id                 String          @id @default(uuid()) @db.VarChar(36)
+  auditCycleId       String          @map("audit_cycle_id") @db.VarChar(36)
+  assetId            String          @map("asset_id") @db.VarChar(36)
+  status             AuditItemStatus @default(PENDING)
+  verifiedById       String?         @map("verified_by_id") @db.VarChar(36)
+  verificationNotes  String?         @map("verification_notes") @db.Text
+  verifiedAt         DateTime?       @map("verified_at")
+
+  auditCycle         AuditCycle      @relation(fields: [auditCycleId], references: [id], onDelete: Cascade)
+  asset              Asset           @relation(fields: [assetId], references: [id])
+  verifiedBy         User?           @relation(fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  @@map("odoo_assetflow_audit_items")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  userId      String?  @map("user_id") @db.VarChar(36)
+  action      String
+  details     Json
+  ipAddress   String?  @map("ip_address")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("odoo_assetflow_audit_logs")
+}
