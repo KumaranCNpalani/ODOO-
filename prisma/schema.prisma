@@ -89,6 +89,8 @@ model User {
   createdAt      DateTime   @default(now()) @map("created_at")
   updatedAt      DateTime   @updatedAt @map("updated_at")
 
+
+
   department     Department? @relation("UserDepartment", fields: [departmentId], references: [id], onDelete: SetNull)
   headedDepartment Department[] @relation("DepartmentHead")
   allocations    Allocation[] @relation("AllocationUser")
