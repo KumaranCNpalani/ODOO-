@@ -6,39 +6,39 @@ AssetFlow is a next-generation IT asset management registry and custody tracking
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
-### 📦 1. Assets Directory
+### 1. Assets Directory
 * Catalog organizational resources with unique serial numbers, acquisition metrics, locations, and conditions.
 * Sequential tag generation (e.g., `AF-0001`, `AF-0002`) on registration.
 * Categorization schemas allowing customizable metadata attributes per category (e.g. storage size, processing power, serial ranges).
 
-### 👥 2. Custody Allocations & Transfers
+### 2. Custody Allocations & Transfers
 * Allocate hardware checkouts to specific employees or departments with return schedules.
 * Double-allocation locks preventing checkout conflicts.
 * Peer-to-peer transfer request pipeline with management approval routing.
 
-### 📅 3. Shared Resource Booking
+### 3. Shared Resource Booking
 * Timeline scheduling board showing resource reservations.
 * Instant booking of checkable conference rooms, test devices, and pool vehicles.
 * Overlap validation locks ensuring double-bookings are avoided.
 
-### 🔧 4. Maintenance & Kanban repairs
+### 4. Maintenance & Kanban repairs
 * Multi-state Kanban board tracking hardware issues.
 * Technician assignment dropdowns and resolution logs.
 * Automates asset state transitions (e.g. sets asset status to `UNDER_MAINTENANCE` upon approval and restores to `AVAILABLE` on resolution).
 
-### 📋 5. Physical Audit Cycles
+### 5. Physical Audit Cycles
 * Launches auditor-assigned verification checklist sessions.
 * Real-time discrepancy reporting for damaged or missing items.
 * Audit history tracking detailing verified/missing/damaged statistics.
 
-### 📊 6. Bulk CSV Import & Exports
+### 6. Bulk CSV Import & Exports
 * **Employees CSV Import**: Columns: `Name, Email, Role, Department`. Automatically provisions default secure temporary passwords (`Welcome@AssetFlow2026`).
 * **Assets CSV Import**: Columns: `Name, Category, Serial Number, Cost, Location, Bookable`.
 * **Export CSV utilities** available on the Assets Directory, Setup Tab, Allocations, Bookings, Maintenance Kanban, and Active Audit checklists.
 
-### ✉️ 7. SMTP Email Alert Triggers
+### 7. SMTP Email Alert Triggers
 * **Custody Actions**: Sends checkout receipts and returned check-in confirmations.
 * **Transfers**: Alerts target employees when transfers are requested, approved, or rejected.
 * **Reservations**: Confirmation emails on booking slots and cancellation notices.
@@ -47,7 +47,7 @@ AssetFlow is a next-generation IT asset management registry and custody tracking
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 * **Framework**: Next.js 16 (App Router, Server Actions, React 19)
 * **Styling**: Tailwind CSS v4, Lucide React icons, Recharts
 * **Database**: Prisma ORM, MySQL (relational database engine)
@@ -55,7 +55,7 @@ AssetFlow is a next-generation IT asset management registry and custody tracking
 
 ---
 
-## 💻 Local Setup & Development
+## Local Setup & Development
 
 ### 1. Configure Environment variables
 Create a `.env` file in the root directory:
